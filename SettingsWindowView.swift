@@ -19,34 +19,34 @@ struct SettingsWindowView: View {
             // Header
             HStack {
                 Text("Menu2FA Preferences")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
                 Spacer()
                 Button(action: onClose) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 13))
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
 
             Divider()
 
             // Slim Scrollable Content View
             SleekScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     // Menu Bar Display Style
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Text("Menu Bar Style:")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
 
                         Picker("", selection: $showTextInMenuBar) {
                             Text("Icon Only (Compact)").tag(false)
                             Text("Icon + Text ('2FA')").tag(true)
                         }
                         .pickerStyle(.radioGroup)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .onChange(of: showTextInMenuBar) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "showTextInMenuBar")
                             NotificationCenter.default.post(name: Notification.Name("StatusItemStyleChanged"), object: nil)
@@ -56,16 +56,16 @@ struct SettingsWindowView: View {
                     Divider()
 
                     // Account Sort Order
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 5) {
                         Text("Account Sort Order:")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
 
                         Picker("", selection: $sortNewestFirst) {
                             Text("Newest First (Top)").tag(true)
                             Text("Oldest First (Bottom)").tag(false)
                         }
                         .pickerStyle(.radioGroup)
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .onChange(of: sortNewestFirst) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "sortNewestFirst")
                             NotificationCenter.default.post(name: Notification.Name("SortOrderSettingChanged"), object: nil)
@@ -77,7 +77,7 @@ struct SettingsWindowView: View {
                     // Max Accounts in Menu
                     HStack {
                         Text("Max Accounts in Menu:")
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                         Spacer()
                         Picker("", selection: $maxVisibleAccounts) {
                             Text("5").tag(5)
@@ -86,7 +86,7 @@ struct SettingsWindowView: View {
                             Text("Unlimited").tag(0)
                         }
                         .labelsHidden()
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .onChange(of: maxVisibleAccounts) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "maxVisibleAccounts")
                             NotificationCenter.default.post(name: Notification.Name("MaxAccountsSettingChanged"), object: nil)
@@ -97,7 +97,7 @@ struct SettingsWindowView: View {
 
                     // Launch at Login
                     Toggle("Launch Menu2FA at Login", isOn: $launchAtLogin)
-                        .font(.system(size: 11, weight: .medium))
+                        .font(.system(size: 12, weight: .medium))
                         .onChange(of: launchAtLogin) { newValue in
                             AutoLaunchManager.isEnabled = newValue
                         }
@@ -108,7 +108,7 @@ struct SettingsWindowView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text("Backup Vault:")
-                                .font(.system(size: 10, weight: .semibold))
+                                .font(.system(size: 11, weight: .semibold))
                             Spacer()
                             Button("Export (JSON)") {
                                 if let json = store.exportVault() {
@@ -121,12 +121,12 @@ struct SettingsWindowView: View {
                                     isSuccess = false
                                 }
                             }
-                            .font(.system(size: 10))
+                            .font(.system(size: 11))
                         }
 
                         TextEditor(text: $importJSONText)
-                            .font(.system(size: 9, design: .monospaced))
-                            .frame(height: 36)
+                            .font(.system(size: 10, design: .monospaced))
+                            .frame(height: 40)
                             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.secondary.opacity(0.3)))
 
                         Button("Import Backup JSON") {
@@ -140,7 +140,7 @@ struct SettingsWindowView: View {
                                 isSuccess = false
                             }
                         }
-                        .font(.system(size: 10))
+                        .font(.system(size: 11))
                         .disabled(importJSONText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
 
@@ -149,20 +149,20 @@ struct SettingsWindowView: View {
                     // Danger Zone: Reset DB
                     HStack {
                         Text("Danger Zone:")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .foregroundColor(.red)
                         Spacer()
                         Button(action: {
                             showDeleteConfirmation = true
                         }) {
-                            HStack(spacing: 3) {
+                            HStack(spacing: 4) {
                                 Image(systemName: "trash.fill")
                                 Text("Delete All DB")
                             }
-                            .font(.system(size: 10, weight: .semibold))
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
                             .background(Color.red)
                             .cornerRadius(4)
                         }
@@ -183,13 +183,12 @@ struct SettingsWindowView: View {
 
                     if let message = statusMessage {
                         Text(message)
-                            .font(.system(size: 10, weight: .medium))
+                            .font(.system(size: 11, weight: .medium))
                             .foregroundColor(isSuccess ? .green : .red)
                     }
                 }
-                .padding(12)
+                .padding(14)
             }
-            .frame(width: 320)
 
             Divider()
 
@@ -198,11 +197,11 @@ struct SettingsWindowView: View {
                 Button(action: {
                     NSApplication.shared.terminate(nil)
                 }) {
-                    HStack(spacing: 3) {
+                    HStack(spacing: 4) {
                         Image(systemName: "power")
                         Text("Quit App")
                     }
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.red)
                 }
                 .buttonStyle(.plain)
@@ -210,12 +209,12 @@ struct SettingsWindowView: View {
                 Spacer()
 
                 Button("Done", action: onClose)
-                    .font(.system(size: 11))
+                    .font(.system(size: 12))
                     .buttonStyle(.borderedProminent)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
         }
-        .frame(width: 320, height: 380)
+        .frame(width: 340, height: 480)
     }
 }
