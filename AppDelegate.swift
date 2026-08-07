@@ -16,9 +16,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem.button {
-            if #available(macOS 11.0, *) {
-                let config = NSImage.SymbolConfiguration(pointSize: 15, weight: .semibold)
-                let image = NSImage(systemSymbolName: "lock.shield.fill", accessibilityDescription: "Menu2FA")?.withSymbolConfiguration(config)
+            if let path = Bundle.main.path(forResource: "StatusBarIcon", ofType: "png"),
+               let customImg = NSImage(contentsOfFile: path) {
+                customImg.isTemplate = true
+                button.image = customImg
+            } else if #available(macOS 11.0, *) {
+                let image = NSImage(systemSymbolName: "lock.shield.fill", accessibilityDescription: "Menu2FA")
                 image?.isTemplate = true
                 button.image = image
             }
