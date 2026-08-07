@@ -17,25 +17,27 @@
 - 📋 **1-Click Copy:** Click any account row to instantly copy the 6-digit code to your clipboard.
 - ⚙️ **Preferences:** Toggle between **Icon Only (Compact)** or **Icon + Text ("2FA")** menu bar styles, plus Launch at Login support.
 - 📦 **Vault Backup:** Import and export your accounts as JSON backups at any time.
-- 💻 **Universal Binary:** Native support for both Apple Silicon (M1/M2/M3/M4) and Intel Macs.
+- ⚡ **Apple Silicon Native:** Compiled directly for M1/M2/M3/M4 Macs.
 
 ---
 
-## How to Fix "App Cannot Be Opened" on Other Macs
+## Fix "Menu2FA Cannot Be Opened" on Other Macs
 
-When downloading or transferring `Menu2FA.app` to another Mac, macOS Gatekeeper automatically attaches a quarantine flag because the app is open-source and free (not signed with a paid Apple Developer certificate).
+When transferring `Menu2FA.app` to another Mac (via AirDrop, Slack, USB, or ZIP), macOS strips binary execution permissions and attaches Gatekeeper quarantine.
 
-### Option 1: Terminal Command (Fastest)
-Run this single command on the other Mac:
+### 1-Line Fix Command for Other Macs
+Run this single command in Terminal on the other Mac:
+
 ```bash
-xattr -cr /Applications/Menu2FA.app
+chmod +x /Applications/Menu2FA.app/Contents/MacOS/Menu2FA && xattr -cr /Applications/Menu2FA.app && codesign --force --deep --sign - /Applications/Menu2FA.app
 ```
 
-### Option 2: Right-Click Open (No Terminal)
-1. Open Finder and go to `/Applications`.
-2. **Right-click (or Control-click)** on `Menu2FA.app`.
-3. Click **Open** from the menu.
-4. Click **Open** again in the macOS warning dialog.
+This performs 3 actions in 1 second:
+1. `chmod +x` ➔ Restores executable permissions on the binary.
+2. `xattr -cr` ➔ Clears macOS Gatekeeper quarantine.
+3. `codesign --force` ➔ Signs the binary ad-hoc for that specific Mac.
+
+Then double-click `Menu2FA.app` or run `open /Applications/Menu2FA.app`!
 
 ---
 
@@ -46,4 +48,4 @@ chmod +x build.sh
 ./build.sh
 ```
 
-The Universal Binary application will be generated and installed to `/Applications/Menu2FA.app`.
+The application will be compiled and installed to `/Applications/Menu2FA.app`.

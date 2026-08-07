@@ -37,6 +37,9 @@ swiftc -O \
     "$PROJECT_DIR/AppDelegate.swift" \
     -o "$MacOS_DIR/Menu2FA"
 
+# Set executable permission
+chmod +x "$MacOS_DIR/Menu2FA"
+
 # Code sign ad-hoc and clear quarantine attributes
 xattr -cr "$APP_DIR" || true
 codesign --force --deep --sign - "$APP_DIR"
@@ -45,6 +48,8 @@ codesign --force --deep --sign - "$APP_DIR"
 echo "📦 Installing Menu2FA.app to /Applications..."
 rm -rf "/Applications/Menu2FA.app" || true
 cp -R "$APP_DIR" "/Applications/Menu2FA.app"
+chmod +x "/Applications/Menu2FA.app/Contents/MacOS/Menu2FA"
 xattr -cr "/Applications/Menu2FA.app" || true
+codesign --force --deep --sign - "/Applications/Menu2FA.app"
 
 echo "✅ Successfully built Apple Silicon Menu2FA.app (arm64)!"
