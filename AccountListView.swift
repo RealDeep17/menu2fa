@@ -1,4 +1,41 @@
 import SwiftUI
+import AppKit
+
+struct SleekScrollView<Content: View>: NSViewRepresentable {
+    let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let scrollView = NSScrollView()
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.scrollerStyle = .overlay
+        scrollView.verticalScroller?.controlSize = .mini
+
+        let hostingView = NSHostingView(rootView: content)
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.documentView = hostingView
+
+        NSLayoutConstraint.activate([
+            hostingView.leadingAnchor.constraint(equalTo: scrollView.contentView.leadingAnchor),
+            hostingView.trailingAnchor.constraint(equalTo: scrollView.contentView.trailingAnchor),
+            hostingView.topAnchor.constraint(equalTo: scrollView.contentView.topAnchor)
+        ])
+
+        return scrollView
+    }
+
+    func updateNSView(_ nsView: NSScrollView, context: Context) {
+        if let hostingView = nsView.documentView as? NSHostingView<Content> {
+            hostingView.rootView = content
+        }
+    }
+}
 
 struct AccountListView: View {
     @ObservedObject var store: AccountStore
@@ -20,8 +57,8 @@ struct AccountListView: View {
                 }
                 .frame(width: 310, height: 80)
             } else {
-                ScrollView(.vertical, showsIndicators: true) {
-                    LazyVStack(spacing: 0) {
+                SleekScrollView {
+                    VStack(spacing: 0) {
                         ForEach(store.filteredAccounts) { entry in
                             MenuRowView(
                                 entry: entry,
@@ -33,7 +70,7 @@ struct AccountListView: View {
                     }
                 }
                 .frame(width: 310)
-                .frame(maxHeight: 300)
+                .frame(maxHeight: 290)
             }
         }
     }
