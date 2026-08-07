@@ -10,6 +10,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var settingsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Enforce single-instance application (Prevent duplicate menu bar icons)
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        let runningApps = NSRunningApplication.runningApplications(withBundleIdentifier: "com.menu2fa.app")
+        if runningApps.contains(where: { $0.processIdentifier != currentPID }) {
+            print("Menu2FA is already running. Terminating duplicate instance.")
+            NSApp.terminate(nil)
+            return
+        }
+
         NSApp.setActivationPolicy(.accessory)
 
         // Create NSStatusItem using native SF Symbol lock.shield.fill
