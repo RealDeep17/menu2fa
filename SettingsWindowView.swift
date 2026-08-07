@@ -7,6 +7,7 @@ struct SettingsWindowView: View {
 
     @State private var launchAtLogin: Bool = AutoLaunchManager.isEnabled
     @State private var showTextInMenuBar: Bool = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
+    @State private var maxVisibleAccounts: Int = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 10
     @State private var sortNewestFirst: Bool = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
     @State private var importJSONText: String = ""
     @State private var statusMessage: String? = nil

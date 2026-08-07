@@ -99,7 +99,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         ))
         
         let count = accountStore.filteredAccounts.count
-        let listHeight: CGFloat = count == 0 ? 80 : min(CGFloat(count) * 44.0, 300.0)
+        let listHeight: CGFloat = count == 0 ? 80 : min(CGFloat(count) * 44.0, 440.0)
         listView.frame = NSRect(x: 0, y: 0, width: 310, height: listHeight)
 
         let listItem = NSMenuItem()
