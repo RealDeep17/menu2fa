@@ -19,34 +19,34 @@ struct SettingsWindowView: View {
             // Header
             HStack {
                 Text("Menu2FA Preferences")
-                    .font(.system(size: 15, weight: .bold))
+                    .font(.system(size: 13, weight: .bold))
                 Spacer()
                 Button(action: onClose) {
                     Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 13))
                         .foregroundColor(.secondary)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 14)
-            .padding(.bottom, 8)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
 
             Divider()
 
-            // Scrollable Content View
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(alignment: .leading, spacing: 14) {
-                    // Menu Bar Display Style Setting
-                    VStack(alignment: .leading, spacing: 6) {
+            // Slim Scrollable Content View
+            SleekScrollView {
+                VStack(alignment: .leading, spacing: 10) {
+                    // Menu Bar Display Style
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Menu Bar Style:")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
 
                         Picker("", selection: $showTextInMenuBar) {
-                            Text("Icon Only (Compact - Saves space)").tag(false)
+                            Text("Icon Only (Compact)").tag(false)
                             Text("Icon + Text ('2FA')").tag(true)
                         }
                         .pickerStyle(.radioGroup)
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .onChange(of: showTextInMenuBar) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "showTextInMenuBar")
                             NotificationCenter.default.post(name: Notification.Name("StatusItemStyleChanged"), object: nil)
@@ -55,17 +55,17 @@ struct SettingsWindowView: View {
 
                     Divider()
 
-                    // Account Sort Order Setting
-                    VStack(alignment: .leading, spacing: 6) {
+                    // Account Sort Order
+                    VStack(alignment: .leading, spacing: 4) {
                         Text("Account Sort Order:")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
 
                         Picker("", selection: $sortNewestFirst) {
-                            Text("Newest Accounts First (Top)").tag(true)
-                            Text("Oldest Accounts First (Bottom)").tag(false)
+                            Text("Newest First (Top)").tag(true)
+                            Text("Oldest First (Bottom)").tag(false)
                         }
                         .pickerStyle(.radioGroup)
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .onChange(of: sortNewestFirst) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "sortNewestFirst")
                             NotificationCenter.default.post(name: Notification.Name("SortOrderSettingChanged"), object: nil)
@@ -74,19 +74,19 @@ struct SettingsWindowView: View {
 
                     Divider()
 
-                    // Max Accounts in Menu Setting
+                    // Max Accounts in Menu
                     HStack {
                         Text("Max Accounts in Menu:")
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                         Spacer()
                         Picker("", selection: $maxVisibleAccounts) {
-                            Text("5 accounts").tag(5)
-                            Text("10 accounts (Default)").tag(10)
-                            Text("15 accounts").tag(15)
+                            Text("5").tag(5)
+                            Text("10 (Default)").tag(10)
+                            Text("15").tag(15)
                             Text("Unlimited").tag(0)
                         }
                         .labelsHidden()
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .onChange(of: maxVisibleAccounts) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "maxVisibleAccounts")
                             NotificationCenter.default.post(name: Notification.Name("MaxAccountsSettingChanged"), object: nil)
@@ -95,91 +95,85 @@ struct SettingsWindowView: View {
 
                     Divider()
 
-                    // Launch at Login Toggle
+                    // Launch at Login
                     Toggle("Launch Menu2FA at Login", isOn: $launchAtLogin)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .onChange(of: launchAtLogin) { newValue in
                             AutoLaunchManager.isEnabled = newValue
                         }
 
                     Divider()
 
-                    // Export Vault
+                    // Export & Import Vault
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Export Backup:")
-                            .font(.system(size: 11, weight: .semibold))
-
-                        Button("Export Vault to Clipboard (JSON)") {
-                            if let json = store.exportVault() {
-                                NSPasteboard.general.clearContents()
-                                NSPasteboard.general.setString(json, forType: .string)
-                                statusMessage = "Vault exported & copied to clipboard!"
-                                isSuccess = true
-                            } else {
-                                statusMessage = "Failed to export vault."
-                                isSuccess = false
+                        HStack {
+                            Text("Backup Vault:")
+                                .font(.system(size: 10, weight: .semibold))
+                            Spacer()
+                            Button("Export (JSON)") {
+                                if let json = store.exportVault() {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(json, forType: .string)
+                                    statusMessage = "Vault copied to clipboard!"
+                                    isSuccess = true
+                                } else {
+                                    statusMessage = "Failed to export."
+                                    isSuccess = false
+                                }
                             }
+                            .font(.system(size: 10))
                         }
-                        .font(.system(size: 11))
-                    }
-
-                    Divider()
-
-                    // Import Vault
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Import Backup (JSON):")
-                            .font(.system(size: 11, weight: .semibold))
 
                         TextEditor(text: $importJSONText)
-                            .font(.system(size: 10, design: .monospaced))
-                            .frame(height: 45)
+                            .font(.system(size: 9, design: .monospaced))
+                            .frame(height: 36)
                             .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.secondary.opacity(0.3)))
 
-                        Button("Import Vault") {
+                        Button("Import Backup JSON") {
                             let count = store.importVault(jsonString: importJSONText)
                             if count > 0 {
-                                statusMessage = "Successfully imported \(count) account(s)!"
+                                statusMessage = "Imported \(count) account(s)!"
                                 isSuccess = true
                                 importJSONText = ""
                             } else {
-                                statusMessage = "Invalid JSON backup or no new accounts imported."
+                                statusMessage = "Invalid JSON backup."
                                 isSuccess = false
                             }
                         }
-                        .font(.system(size: 11))
+                        .font(.system(size: 10))
                         .disabled(importJSONText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
 
                     Divider()
 
-                    // Danger Zone: Delete Database / Reset Vault
-                    VStack(alignment: .leading, spacing: 6) {
+                    // Danger Zone: Reset DB
+                    HStack {
                         Text("Danger Zone:")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.red)
-
+                        Spacer()
                         Button(action: {
                             showDeleteConfirmation = true
                         }) {
-                            HStack(spacing: 4) {
+                            HStack(spacing: 3) {
                                 Image(systemName: "trash.fill")
-                                Text("Delete All Accounts (Reset DB)")
+                                Text("Delete All DB")
                             }
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(.system(size: 10, weight: .semibold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
                             .background(Color.red)
-                            .cornerRadius(5)
+                            .cornerRadius(4)
                         }
                         .buttonStyle(.plain)
                         .alert(isPresented: $showDeleteConfirmation) {
                             Alert(
-                                title: Text("Delete All 2FA Accounts?"),
-                                message: Text("Are you sure you want to delete all accounts and reset the database? This action cannot be undone."),
+                                title: Text("Delete All Accounts?"),
+                                message: Text("Are you sure you want to delete all accounts and reset the database? This cannot be undone."),
                                 primaryButton: .destructive(Text("Delete All")) {
                                     store.deleteAllAccounts()
-                                    statusMessage = "Database cleared! All accounts deleted."
+                                    statusMessage = "Database reset!"
                                     isSuccess = false
                                 },
                                 secondaryButton: .cancel()
@@ -189,25 +183,26 @@ struct SettingsWindowView: View {
 
                     if let message = statusMessage {
                         Text(message)
-                            .font(.system(size: 11, weight: .medium))
+                            .font(.system(size: 10, weight: .medium))
                             .foregroundColor(isSuccess ? .green : .red)
                     }
                 }
-                .padding(16)
+                .padding(12)
             }
+            .frame(width: 320)
 
             Divider()
 
-            // Action Buttons Footer
+            // Footer Buttons
             HStack {
                 Button(action: {
                     NSApplication.shared.terminate(nil)
                 }) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 3) {
                         Image(systemName: "power")
-                        Text("Quit Menu2FA")
+                        Text("Quit App")
                     }
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.red)
                 }
                 .buttonStyle(.plain)
@@ -215,11 +210,12 @@ struct SettingsWindowView: View {
                 Spacer()
 
                 Button("Done", action: onClose)
-                    .font(.system(size: 12))
+                    .font(.system(size: 11))
                     .buttonStyle(.borderedProminent)
             }
-            .padding(14)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
         }
-        .frame(width: 360, height: 480)
+        .frame(width: 320, height: 380)
     }
 }
