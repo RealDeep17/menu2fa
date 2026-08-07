@@ -97,6 +97,14 @@ class AccountStore: ObservableObject {
         saveAccounts()
     }
 
+    func deleteAllAccounts() {
+        accounts.removeAll()
+        secretsCache.removeAll()
+        try? FileManager.default.removeItem(at: storageURL)
+        try? FileManager.default.removeItem(at: secretsURL)
+        saveAccounts()
+    }
+
     func getSecret(for entry: TOTPEntry) -> String? {
         return secretsCache[entry.id]
     }
