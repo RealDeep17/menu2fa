@@ -36,11 +36,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         updateStatusItemStyle()
 
-        // Listen for Menu Bar Style changes from Preferences
+        // Listen for Preference changes
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateStatusItemStyle),
             name: Notification.Name("StatusItemStyleChanged"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(rebuildMenu),
+            name: Notification.Name("SortOrderSettingChanged"),
             object: nil
         )
 
@@ -173,7 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func openSettingsWindow() {
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 340, height: 380),
+                contentRect: NSRect(x: 0, y: 0, width: 340, height: 430),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false

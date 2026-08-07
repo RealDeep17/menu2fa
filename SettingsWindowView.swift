@@ -7,7 +7,7 @@ struct SettingsWindowView: View {
 
     @State private var launchAtLogin: Bool = AutoLaunchManager.isEnabled
     @State private var showTextInMenuBar: Bool = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
-    @State private var maxVisibleAccounts: Int = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 7
+    @State private var sortNewestFirst: Bool = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
     @State private var importJSONText: String = ""
     @State private var statusMessage: String? = nil
     @State private var isSuccess = false
@@ -45,23 +45,20 @@ struct SettingsWindowView: View {
 
             Divider()
 
-            // Max Accounts in Menu Setting
-            HStack {
-                Text("Max Accounts in Menu:")
+            // Account Sort Order Setting
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Account Sort Order:")
                     .font(.system(size: 11, weight: .semibold))
-                Spacer()
-                Picker("", selection: $maxVisibleAccounts) {
-                    Text("5 accounts").tag(5)
-                    Text("7 accounts (Default)").tag(7)
-                    Text("10 accounts").tag(10)
-                    Text("15 accounts").tag(15)
-                    Text("Unlimited").tag(0)
+
+                Picker("", selection: $sortNewestFirst) {
+                    Text("Newest Accounts First (Top)").tag(true)
+                    Text("Oldest Accounts First (Bottom)").tag(false)
                 }
-                .labelsHidden()
+                .pickerStyle(.radioGroup)
                 .font(.system(size: 11))
-                .onChange(of: maxVisibleAccounts) { newValue in
-                    UserDefaults.standard.set(newValue, forKey: "maxVisibleAccounts")
-                    NotificationCenter.default.post(name: Notification.Name("MaxAccountsSettingChanged"), object: nil)
+                .onChange(of: sortNewestFirst) { newValue in
+                    UserDefaults.standard.set(newValue, forKey: "sortNewestFirst")
+                    NotificationCenter.default.post(name: Notification.Name("SortOrderSettingChanged"), object: nil)
                 }
             }
 
@@ -152,6 +149,6 @@ struct SettingsWindowView: View {
             }
         }
         .padding(16)
-        .frame(width: 340, height: 410)
+        .frame(width: 340, height: 430)
     }
 }

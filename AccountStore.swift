@@ -22,13 +22,18 @@ class AccountStore: ObservableObject {
     }
 
     var filteredAccounts: [TOTPEntry] {
+        let base: [TOTPEntry]
         if searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return accounts
+            base = accounts
+        } else {
+            let query = searchText.lowercased()
+            base = accounts.filter {
+                $0.name.lowercased().contains(query) || $0.issuer.lowercased().contains(query)
+            }
         }
-        let query = searchText.lowercased()
-        return accounts.filter {
-            $0.name.lowercased().contains(query) || $0.issuer.lowercased().contains(query)
-        }
+
+        let sortNewestFirst = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
+        return sortNewestFirst ? Array(base.reversed()) : base
     }
 
     func loadAccounts() {
