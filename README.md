@@ -7,45 +7,43 @@
 ## Features
 
 - 🚀 **Pure Menu Bar App:** Lives exclusively in your macOS status bar (`LSUIElement`).
-- ⚡ **Smart Single-Line Parser:** Accepts single-line pastes of:
+- 🎨 **Maccy-Style Dropdown Menu:** Clean native `NSMenu` dropdown with keyboard shortcuts (`⌘1`, `⌘2`, ...).
+- ⚡ **Smart Single & Multi-Account Parser:** Accepts single or multi-line pastes of:
   - `4DM2M47UQISBDUHV\tvasilolein54@gmail.com`
   - `vasilolein54@gmail.com 4DM2M47UQISBDUHV`
-  - `4DM2M47UQISBDUHV vasilolein54@gmail.com`
-  - Standard `otpauth://totp/...` URIs.
-- 🔒 **Native Security:** Base32 secrets are securely stored in the **macOS Keychain** using Apple's Security framework.
-- ⏳ **Visual 30s Countdown:** Real-time countdown progress bar indicating the remaining validity seconds of TOTP codes.
-- 📋 **1-Click Copy:** Click any account row to instantly copy the 6-digit code to your clipboard with a "Copied!" notification toast.
-- 🔍 **Real-Time Search:** Instantly filter your 2FA accounts by name or issuer.
-- 📦 **Encrypted JSON Vault Backup:** Import and export your accounts as JSON backups at any time.
+  - `otpauth://totp/...` URIs.
+- 📷 **Screen & Clipboard QR Scanner:** Scan 2FA QR codes directly from your display screen (`⌘S`) or copied clipboard image.
+- ⏳ **Live 30s Countdown:** Real-time countdown badge indicating remaining validity seconds of TOTP codes.
+- 📋 **1-Click Copy:** Click any account row to instantly copy the 6-digit code to your clipboard.
+- ⚙️ **Preferences:** Toggle between **Icon Only (Compact)** or **Icon + Text ("2FA")** menu bar styles, plus Launch at Login support.
+- 📦 **Vault Backup:** Import and export your accounts as JSON backups at any time.
+- 💻 **Universal Binary:** Native support for both Apple Silicon (M1/M2/M3/M4) and Intel Macs.
 
 ---
 
-## Installation & Build
+## How to Fix "App Cannot Be Opened" on Other Macs
 
-To build the standalone `.app` bundle:
+When downloading or transferring `Menu2FA.app` to another Mac, macOS Gatekeeper automatically attaches a quarantine flag because the app is open-source and free (not signed with a paid Apple Developer certificate).
+
+### Option 1: Terminal Command (Fastest)
+Run this single command on the other Mac:
+```bash
+xattr -cr /Applications/Menu2FA.app
+```
+
+### Option 2: Right-Click Open (No Terminal)
+1. Open Finder and go to `/Applications`.
+2. **Right-click (or Control-click)** on `Menu2FA.app`.
+3. Click **Open** from the menu.
+4. Click **Open** again in the macOS warning dialog.
+
+---
+
+## Build from Source
 
 ```bash
 chmod +x build.sh
 ./build.sh
 ```
 
-The compiled application bundle will be generated at:
-`build/Menu2FA.app`
-
-### Running the App:
-```bash
-open build/Menu2FA.app
-```
-
----
-
-## How to Add 2FA Accounts
-
-1. Click the **lock/shield icon** in your macOS top menu bar.
-2. Click the **`+`** icon in the top right of the popover.
-3. In the **Smart Input** box, paste your string in any format:
-   - `4DM2M47UQISBDUHV\tvasilolein54@gmail.com`
-   - `vasilolein54@gmail.com 4DM2M47UQISBDUHV`
-   - `4DM2M47UQISBDUHV`
-4. The live preview will automatically validate the secret and generate the 6-digit TOTP code.
-5. Click **Save Account**.
+The Universal Binary application will be generated and installed to `/Applications/Menu2FA.app`.
