@@ -12,16 +12,10 @@ echo "🔨 Building Menu2FA Native macOS Maccy-Style Menu Bar App..."
 
 mkdir -p "$MacOS_DIR" "$RESOURCES_DIR"
 
-# Copy Info.plist, AppIcon.icns, and StatusBarIcon images
+# Copy Info.plist and AppIcon.icns
 cp "$PROJECT_DIR/Info.plist" "$CONTENTS_DIR/Info.plist"
 if [ -f "$PROJECT_DIR/AppIcon.icns" ]; then
     cp "$PROJECT_DIR/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
-fi
-if [ -f "$PROJECT_DIR/StatusBarIcon.png" ]; then
-    cp "$PROJECT_DIR/StatusBarIcon.png" "$RESOURCES_DIR/StatusBarIcon.png"
-fi
-if [ -f "$PROJECT_DIR/StatusBarIcon@2x.png" ]; then
-    cp "$PROJECT_DIR/StatusBarIcon@2x.png" "$RESOURCES_DIR/StatusBarIcon@2x.png"
 fi
 
 # Compile Swift files

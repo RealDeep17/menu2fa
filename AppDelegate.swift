@@ -12,18 +12,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
-        // Create NSStatusItem
+        // Create NSStatusItem using native SF Symbol lock.shield.fill
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
         if let button = statusItem.button {
-            if let path = Bundle.main.path(forResource: "StatusBarIcon", ofType: "png"),
-               let customImg = NSImage(contentsOfFile: path) {
-                customImg.isTemplate = true
-                button.image = customImg
-            } else if #available(macOS 11.0, *) {
+            if #available(macOS 11.0, *) {
                 let image = NSImage(systemSymbolName: "lock.shield.fill", accessibilityDescription: "Menu2FA")
                 image?.isTemplate = true
                 button.image = image
+            } else {
+                button.title = "🔑 2FA"
             }
             button.title = " 2FA"
         }
@@ -118,7 +116,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     private func handleQuickAddAutoDetect() {
-        // Do NOT cancel tracking so the menu stays open when adding from clipboard!
         if let clipboard = NSPasteboard.general.string(forType: .string) {
             let parsedAccounts = SmartParser.parseMultiple(clipboard)
             if !parsedAccounts.isEmpty {
