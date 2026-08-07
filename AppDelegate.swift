@@ -36,11 +36,17 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
         updateStatusItemStyle()
 
-        // Listen for Menu Bar Style changes from Preferences
+        // Listen for Menu Bar Style & Max Accounts changes from Preferences
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(updateStatusItemStyle),
             name: Notification.Name("StatusItemStyleChanged"),
+            object: nil
+        )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(rebuildMenu),
+            name: Notification.Name("MaxAccountsSettingChanged"),
             object: nil
         )
 
@@ -63,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         rebuildMenu()
     }
 
-    func rebuildMenu() {
+    @objc func rebuildMenu() {
         menu.removeAllItems()
 
         // 1. Search & Auto-Detect Header Item (Fills menu width)
@@ -80,14 +86,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 2. Account List Items
+        // 2. Account List Items (Limited by maxVisibleAccounts setting)
         let filtered = accountStore.filteredAccounts
-        if filtered.isEmpty {
+        let maxLimit = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 7
+
+        let accountsToDisplay: [TOTPEntry]
+        if maxLimit > 0 && accountStore.searchText.isEmpty {
+            accountsToDisplay = Array(filtered.prefix(maxLimit))
+        } else {
+            accountsToDisplay = filtered
+        }
+
+        if accountsToDisplay.isEmpty {
             let emptyItem = NSMenuItem(title: accountStore.searchText.isEmpty ? "  No 2FA Accounts Yet" : "  No matching accounts", action: nil, keyEquivalent: "")
             emptyItem.isEnabled = false
             menu.addItem(emptyItem)
         } else {
-            for (index, entry) in filtered.enumerated() {
+            for (index, entry) in accountsToDisplay.enumerated() {
                 let rowView = NSHostingView(rootView: MenuRowView(
                     entry: entry,
                     store: accountStore,
@@ -113,6 +128,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 }
 
                 menu.addItem(menuItem)
+            }
+
+            // Show subtle indicator if more accounts exist
+            if maxLimit > 0 && filtered.count > maxLimit && accountStore.searchText.isEmpty {
+                let moreCount = filtered.count - maxLimit
+                let moreItem = NSMenuItem(title: "  🔍 +\(moreCount) more (type in search bar to filter)", action: nil, keyEquivalent: "")
+                moreItem.isEnabled = false
+                menu.addItem(moreItem)
             }
         }
 
@@ -228,7 +251,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func openSettingsWindow() {
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 340, height: 380),
+                contentRect: NSRect(x: 0, y: 0, width: 340, height: 410),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false

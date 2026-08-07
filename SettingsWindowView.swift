@@ -7,6 +7,7 @@ struct SettingsWindowView: View {
 
     @State private var launchAtLogin: Bool = AutoLaunchManager.isEnabled
     @State private var showTextInMenuBar: Bool = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
+    @State private var maxVisibleAccounts: Int = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 7
     @State private var importJSONText: String = ""
     @State private var statusMessage: String? = nil
     @State private var isSuccess = false
@@ -39,6 +40,28 @@ struct SettingsWindowView: View {
                 .onChange(of: showTextInMenuBar) { newValue in
                     UserDefaults.standard.set(newValue, forKey: "showTextInMenuBar")
                     NotificationCenter.default.post(name: Notification.Name("StatusItemStyleChanged"), object: nil)
+                }
+            }
+
+            Divider()
+
+            // Max Accounts in Menu Setting
+            HStack {
+                Text("Max Accounts in Menu:")
+                    .font(.system(size: 11, weight: .semibold))
+                Spacer()
+                Picker("", selection: $maxVisibleAccounts) {
+                    Text("5 accounts").tag(5)
+                    Text("7 accounts (Default)").tag(7)
+                    Text("10 accounts").tag(10)
+                    Text("15 accounts").tag(15)
+                    Text("Unlimited").tag(0)
+                }
+                .labelsHidden()
+                .font(.system(size: 11))
+                .onChange(of: maxVisibleAccounts) { newValue in
+                    UserDefaults.standard.set(newValue, forKey: "maxVisibleAccounts")
+                    NotificationCenter.default.post(name: Notification.Name("MaxAccountsSettingChanged"), object: nil)
                 }
             }
 
@@ -81,7 +104,7 @@ struct SettingsWindowView: View {
 
                 TextEditor(text: $importJSONText)
                     .font(.system(size: 10, design: .monospaced))
-                    .frame(height: 50)
+                    .frame(height: 45)
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.secondary.opacity(0.3)))
 
                 Button("Import Vault") {
@@ -129,6 +152,6 @@ struct SettingsWindowView: View {
             }
         }
         .padding(16)
-        .frame(width: 340, height: 380)
+        .frame(width: 340, height: 410)
     }
 }
