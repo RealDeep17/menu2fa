@@ -30,10 +30,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 image?.isTemplate = true
                 button.image = image
             } else {
-                button.title = "🔑 2FA"
+                button.title = "🔑"
             }
-            button.title = " 2FA"
         }
+        updateStatusItemStyle()
+
+        // Listen for Menu Bar Style changes from Preferences
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(updateStatusItemStyle),
+            name: Notification.Name("StatusItemStyleChanged"),
+            object: nil
+        )
 
         // Setup Maccy-style NSMenu attached natively to status item
         menu = NSMenu()
@@ -42,6 +50,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
 
         rebuildMenu()
+    }
+
+    @objc private func updateStatusItemStyle() {
+        guard let button = statusItem?.button else { return }
+        let showText = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
+        button.title = showText ? " 2FA" : ""
     }
 
     func menuNeedsUpdate(_ menu: NSMenu) {
@@ -210,13 +224,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func openSettingsWindow() {
         if settingsWindow == nil {
             let window = NSWindow(
-                contentRect: NSRect(x: 0, y: 0, width: 340, height: 340),
+                contentRect: NSRect(x: 0, y: 0, width: 340, height: 380),
                 styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered,
                 defer: false
             )
             window.center()
-            window.title = "Menu2FA Settings"
+            window.title = "Menu2FA Preferences"
             window.isReleasedWhenClosed = false
             window.level = .floating
             window.contentView = NSHostingView(rootView: SettingsWindowView(

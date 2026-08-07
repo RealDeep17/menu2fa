@@ -6,6 +6,7 @@ struct SettingsWindowView: View {
     let onClose: () -> Void
 
     @State private var launchAtLogin: Bool = AutoLaunchManager.isEnabled
+    @State private var showTextInMenuBar: Bool = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
     @State private var importJSONText: String = ""
     @State private var statusMessage: String? = nil
     @State private var isSuccess = false
@@ -23,6 +24,25 @@ struct SettingsWindowView: View {
                 }
                 .buttonStyle(.plain)
             }
+
+            // Menu Bar Display Style Setting
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Menu Bar Style:")
+                    .font(.system(size: 11, weight: .semibold))
+
+                Picker("", selection: $showTextInMenuBar) {
+                    Text("Icon Only (Compact - Saves space)").tag(false)
+                    Text("Icon + Text ('2FA')").tag(true)
+                }
+                .pickerStyle(.radioGroup)
+                .font(.system(size: 11))
+                .onChange(of: showTextInMenuBar) { newValue in
+                    UserDefaults.standard.set(newValue, forKey: "showTextInMenuBar")
+                    NotificationCenter.default.post(name: Notification.Name("StatusItemStyleChanged"), object: nil)
+                }
+            }
+
+            Divider()
 
             // Launch at Login Toggle
             Toggle("Launch Menu2FA at Login", isOn: $launchAtLogin)
@@ -61,7 +81,7 @@ struct SettingsWindowView: View {
 
                 TextEditor(text: $importJSONText)
                     .font(.system(size: 10, design: .monospaced))
-                    .frame(height: 60)
+                    .frame(height: 50)
                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.secondary.opacity(0.3)))
 
                 Button("Import Vault") {
@@ -109,6 +129,6 @@ struct SettingsWindowView: View {
             }
         }
         .padding(16)
-        .frame(width: 340, height: 340)
+        .frame(width: 340, height: 380)
     }
 }
