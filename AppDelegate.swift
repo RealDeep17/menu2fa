@@ -26,7 +26,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         
         if let button = statusItem.button {
             if #available(macOS 11.0, *) {
-                let image = NSImage(systemSymbolName: "lock.shield.fill", accessibilityDescription: "Menu2FA")
+                let config = NSImage.SymbolConfiguration(pointSize: 17, weight: .semibold, scale: .large)
+                let image = NSImage(systemSymbolName: "lock.shield.fill", accessibilityDescription: "Menu2FA")?.withSymbolConfiguration(config)
                 image?.isTemplate = true
                 button.image = image
             } else {
