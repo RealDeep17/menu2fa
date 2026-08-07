@@ -32,6 +32,7 @@ swiftc -O \
     "$PROJECT_DIR/AccountStore.swift" \
     "$PROJECT_DIR/MenuHeaderView.swift" \
     "$PROJECT_DIR/MenuRowView.swift" \
+    "$PROJECT_DIR/AccountListView.swift" \
     "$PROJECT_DIR/AddAccountWindowView.swift" \
     "$PROJECT_DIR/SettingsWindowView.swift" \
     "$PROJECT_DIR/AppDelegate.swift" \
