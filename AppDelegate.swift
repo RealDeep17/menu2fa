@@ -94,6 +94,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                     onDelete: { [weak self] in
                         self?.accountStore.deleteAccount(entry)
                         self?.rebuildMenu()
+                    },
+                    onCopy: { [weak self] in
+                        self?.menu.cancelTracking()
                     }
                 ))
                 rowView.frame = NSRect(x: 0, y: 0, width: 310, height: 44)

@@ -1,10 +1,12 @@
 import SwiftUI
 import Combine
+import AppKit
 
 struct MenuRowView: View {
     let entry: TOTPEntry
     @ObservedObject var store: AccountStore
     let onDelete: () -> Void
+    let onCopy: () -> Void
 
     @State private var otpCode: String = ""
     @State private var timeRemaining: Int = TOTPGenerator.timeRemaining()
@@ -72,6 +74,13 @@ struct MenuRowView: View {
         .contentShape(Rectangle())
         .onHover { hovering in
             isHovering = hovering
+        }
+        .onTapGesture {
+            let code = store.generateOTP(for: entry)
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(code, forType: .string)
+            NSSound.beep()
+            onCopy()
         }
         .onAppear {
             updateCode()
