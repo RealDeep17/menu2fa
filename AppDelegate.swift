@@ -102,16 +102,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         menu.addItem(NSMenuItem.separator())
 
-        // 3. Bottom Controls (Manual Add, QR Code Scan, Preferences, Quit)
+        // 3. Bottom Controls (Manual Add, Preferences, Quit)
         let manualAddItem = NSMenuItem(title: "➕ Manual Add Account...", action: #selector(openAddWindow), keyEquivalent: "a")
         manualAddItem.keyEquivalentModifierMask = [.command]
         manualAddItem.target = self
         menu.addItem(manualAddItem)
-
-        let qrScanItem = NSMenuItem(title: "📷 Scan QR Code (Screen / Clipboard)...", action: #selector(scanQRCodeOnScreen), keyEquivalent: "s")
-        qrScanItem.keyEquivalentModifierMask = [.command]
-        qrScanItem.target = self
-        menu.addItem(qrScanItem)
 
         let preferencesItem = NSMenuItem(title: "⚙️ Preferences...", action: #selector(openSettingsWindow), keyEquivalent: ",")
         preferencesItem.keyEquivalentModifierMask = [.command]
@@ -148,33 +143,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         // Fallback to manual window if clipboard doesn't contain valid 2FA secret(s)
         menu.cancelTracking()
         openAddWindow()
-    }
-
-    @objc private func scanQRCodeOnScreen() {
-        menu.cancelTracking()
-
-        QRCodeScanner.scanScreenOrClipboard { [weak self] parsed, errorMessage in
-            guard let self = self else { return }
-            if let parsed = parsed {
-                if self.accountStore.addAccount(name: parsed.name, issuer: parsed.issuer, secret: parsed.secret) {
-                    NSSound.beep()
-                    self.rebuildMenu()
-                } else {
-                    self.showAlert(title: "Failed to Add", message: "Failed to save secret from scanned QR code.")
-                }
-            } else if let errorMessage = errorMessage {
-                self.showAlert(title: "QR Code Scan Result", message: errorMessage)
-            }
-        }
-    }
-
-    private func showAlert(title: String, message: String) {
-        let alert = NSAlert()
-        alert.messageText = title
-        alert.informativeText = message
-        alert.alertStyle = .informational
-        alert.addButton(withTitle: "OK")
-        alert.runModal()
     }
 
     @objc private func openAddWindow() {

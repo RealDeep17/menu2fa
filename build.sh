@@ -27,7 +27,6 @@ swiftc -O \
     "$PROJECT_DIR/SmartParser.swift" \
     "$PROJECT_DIR/KeychainManager.swift" \
     "$PROJECT_DIR/AutoLaunchManager.swift" \
-    "$PROJECT_DIR/QRCodeScanner.swift" \
     "$PROJECT_DIR/TOTPEntry.swift" \
     "$PROJECT_DIR/AccountStore.swift" \
     "$PROJECT_DIR/MenuHeaderView.swift" \
