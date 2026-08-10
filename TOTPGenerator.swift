@@ -34,11 +34,14 @@ struct TOTPGenerator {
         return data.isEmpty ? nil : data
     }
 
-    /// Generates a 6-digit TOTP code for a given secret and timestamp
+    /// Generates a TOTP code for a given secret, timestamp, period, and digits
     static func generateOTP(secret: String, time: Date = Date(), period: TimeInterval = 30, digits: Int = 6) -> String? {
         guard let keyData = decodeBase32(secret) else { return nil }
         
-        let counter = UInt64(time.timeIntervalSince1970 / period)
+        let timeInterval = time.timeIntervalSince1970
+        guard timeInterval >= 0, period > 0 else { return nil }
+        
+        let counter = UInt64(floor(timeInterval / period))
         var counterBigEndian = counter.bigEndian
         let counterData = Data(bytes: &counterBigEndian, count: MemoryLayout<UInt64>.size)
 
@@ -57,8 +60,16 @@ struct TOTPGenerator {
         }
 
         number &= 0x7fffffff
-        let otpValue = number % UInt32(pow(10.0, Float(digits)))
 
+        let modulus: UInt32
+        switch digits {
+        case 8: modulus = 100_000_000
+        case 7: modulus = 10_000_000
+        case 5: modulus = 100_000
+        default: modulus = 1_000_000
+        }
+
+        let otpValue = number % modulus
         return String(format: "%0\(digits)d", otpValue)
     }
 

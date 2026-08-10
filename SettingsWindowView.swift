@@ -7,9 +7,10 @@ struct SettingsWindowView: View {
 
     @State private var launchAtLogin: Bool = AutoLaunchManager.isEnabled
     @State private var showTextInMenuBar: Bool = UserDefaults.standard.bool(forKey: "showTextInMenuBar")
-    @State private var maxVisibleAccounts: Int = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 10
     @State private var sortNewestFirst: Bool = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
     @State private var persistSearchText: Bool = UserDefaults.standard.bool(forKey: "persistSearchText")
+    @State private var isDetached: Bool = UserDefaults.standard.bool(forKey: "isDetached")
+    @State private var isAlwaysOnTop: Bool = UserDefaults.standard.object(forKey: "isAlwaysOnTop") != nil ? UserDefaults.standard.bool(forKey: "isAlwaysOnTop") : true
     @State private var importJSONText: String = ""
     @State private var statusMessage: String? = nil
     @State private var isSuccess = false
@@ -37,6 +38,33 @@ struct SettingsWindowView: View {
             // Slim Scrollable Content View
             SleekScrollView {
                 VStack(alignment: .leading, spacing: 12) {
+                    // Window Mode & Pinning
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Window Detach & Always-On-Top:")
+                            .font(.system(size: 11, weight: .semibold))
+
+                        HStack {
+                            Text(isDetached ? "Mode: Floating Window" : "Mode: Menu Bar Popover")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Button(isDetached ? "Dock to Menu Bar" : "Undock Window") {
+                                NotificationCenter.default.post(name: Notification.Name("ToggleUndockMode"), object: nil)
+                                isDetached.toggle()
+                            }
+                            .font(.system(size: 11))
+                        }
+
+                        Toggle("Keep Undocked Window Always On Top", isOn: $isAlwaysOnTop)
+                            .font(.system(size: 11, weight: .medium))
+                            .onChange(of: isAlwaysOnTop) { newValue in
+                                UserDefaults.standard.set(newValue, forKey: "isAlwaysOnTop")
+                                NotificationCenter.default.post(name: Notification.Name("AlwaysOnTopSettingChanged"), object: nil)
+                            }
+                    }
+
+                    Divider()
+
                     // Menu Bar Display Style
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Menu Bar Style:")
@@ -88,27 +116,6 @@ struct SettingsWindowView: View {
                         .onChange(of: sortNewestFirst) { newValue in
                             UserDefaults.standard.set(newValue, forKey: "sortNewestFirst")
                             NotificationCenter.default.post(name: Notification.Name("SortOrderSettingChanged"), object: nil)
-                        }
-                    }
-
-                    Divider()
-
-                    // Max Accounts in Menu
-                    HStack {
-                        Text("Max Accounts in Menu:")
-                            .font(.system(size: 11, weight: .semibold))
-                        Spacer()
-                        Picker("", selection: $maxVisibleAccounts) {
-                            Text("5").tag(5)
-                            Text("10 (Default)").tag(10)
-                            Text("15").tag(15)
-                            Text("Unlimited").tag(0)
-                        }
-                        .labelsHidden()
-                        .font(.system(size: 11))
-                        .onChange(of: maxVisibleAccounts) { newValue in
-                            UserDefaults.standard.set(newValue, forKey: "maxVisibleAccounts")
-                            NotificationCenter.default.post(name: Notification.Name("MaxAccountsSettingChanged"), object: nil)
                         }
                     }
 

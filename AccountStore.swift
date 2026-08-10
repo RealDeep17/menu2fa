@@ -10,9 +10,14 @@ class AccountStore: ObservableObject {
     private let storageURL: URL
     private let secretsURL: URL
 
-    init() {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let menu2FADir = appSupport.appendingPathComponent("Menu2FA", isDirectory: true)
+    init(directory: URL? = nil) {
+        let menu2FADir: URL
+        if let customDir = directory {
+            menu2FADir = customDir
+        } else {
+            let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            menu2FADir = appSupport.appendingPathComponent("Menu2FA", isDirectory: true)
+        }
 
         try? FileManager.default.createDirectory(at: menu2FADir, withIntermediateDirectories: true)
         self.storageURL = menu2FADir.appendingPathComponent("accounts.json")
@@ -33,13 +38,7 @@ class AccountStore: ObservableObject {
         }
 
         let sortNewestFirst = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
-        let sorted = sortNewestFirst ? Array(base.reversed()) : base
-
-        let maxAccounts = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 10
-        if maxAccounts > 0 && sorted.count > maxAccounts {
-            return Array(sorted.prefix(maxAccounts))
-        }
-        return sorted
+        return sortNewestFirst ? Array(base.reversed()) : base
     }
 
     func loadAccounts() {
@@ -48,7 +47,15 @@ class AccountStore: ObservableObject {
            let decoded = try? JSONDecoder().decode([TOTPEntry].self, from: data) {
             self.accounts = decoded
         } else {
-            self.accounts = []
+            // Check legacy Mac2FA fallback
+            let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            let legacyURL = appSupport.appendingPathComponent("Mac2FA", isDirectory: true).appendingPathComponent("accounts.json")
+            if let legacyData = try? Data(contentsOf: legacyURL),
+               let legacyDecoded = try? JSONDecoder().decode([TOTPEntry].self, from: legacyData) {
+                self.accounts = legacyDecoded
+            } else {
+                self.accounts = []
+            }
         }
 
         // Load secrets directly from local vault.json (Zero Keychain Security prompts!)
@@ -83,18 +90,49 @@ class AccountStore: ObservableObject {
         }
     }
 
+    var lastUsedIssuer: String? {
+        return accounts.last(where: { !$0.issuer.trimmingCharacters(in: .whitespaces).isEmpty && $0.issuer != "General" })?.issuer
+            ?? accounts.last(where: { !$0.issuer.trimmingCharacters(in: .whitespaces).isEmpty })?.issuer
+    }
+
     func addAccount(name: String, issuer: String, secret: String) -> Bool {
         let cleanSecretKey = SmartParser.cleanSecret(secret)
         guard SmartParser.isBase32Secret(cleanSecretKey) else { return false }
 
-        let newEntry = TOTPEntry(name: name, issuer: issuer)
-        
-        // Store secret directly in local vault (No macOS Keychain prompts!)
-        secretsCache[newEntry.id] = cleanSecretKey
+        let trimmedIssuer = issuer.trimmingCharacters(in: .whitespaces)
+        let effectiveIssuer: String
+        if trimmedIssuer.isEmpty || trimmedIssuer == "General" {
+            effectiveIssuer = lastUsedIssuer ?? (trimmedIssuer.isEmpty ? "General" : trimmedIssuer)
+        } else {
+            effectiveIssuer = trimmedIssuer
+        }
 
+        // Check for duplicate accounts with identical secret
+        if let existing = accounts.first(where: { secretsCache[$0.id] == cleanSecretKey }) {
+            // Update name and issuer of existing entry
+            updateAccount(existing, newName: name, newIssuer: effectiveIssuer)
+            return true
+        }
+
+        // Check for duplicate account with identical name & issuer
+        if let existing = accounts.first(where: { $0.name.lowercased() == name.lowercased() && $0.issuer.lowercased() == effectiveIssuer.lowercased() }) {
+            secretsCache[existing.id] = cleanSecretKey
+            saveAccounts()
+            return true
+        }
+
+        let newEntry = TOTPEntry(name: name, issuer: effectiveIssuer)
+        secretsCache[newEntry.id] = cleanSecretKey
         accounts.append(newEntry)
         saveAccounts()
         return true
+    }
+
+    func updateAccount(_ entry: TOTPEntry, newName: String, newIssuer: String) {
+        guard let index = accounts.firstIndex(where: { $0.id == entry.id }) else { return }
+        accounts[index].name = newName
+        accounts[index].issuer = newIssuer
+        saveAccounts()
     }
 
     func deleteAccount(_ entry: TOTPEntry) {

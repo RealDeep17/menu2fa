@@ -7,7 +7,7 @@ struct AddAccountView: View {
 
     @State private var smartInput: String = ""
     @State private var name: String = ""
-    @State private var issuer: String = "General"
+    @State private var issuer: String = ""
     @State private var secret: String = ""
 
     @State private var previewOTP: String? = nil
@@ -29,7 +29,7 @@ struct AddAccountView: View {
 
             // Smart Input Box
             VStack(alignment: .leading, spacing: 4) {
-                Text("Smart Input (Name + Secret, Secret + Name, or URI):")
+                Text("Smart Input (Secret+Name+Issuer, Secret+Name, Name+Secret, URIs):")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
 
@@ -171,7 +171,7 @@ struct AddAccountView: View {
         if store.addAccount(name: cleanName, issuer: cleanIssuer.isEmpty ? "General" : cleanIssuer, secret: cleanSecret) {
             isPresented = false
         } else {
-            errorMessage = "Failed to save secret to Keychain"
+            errorMessage = "Failed to save secret"
         }
     }
 }

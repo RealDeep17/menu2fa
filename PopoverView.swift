@@ -2,7 +2,12 @@ import SwiftUI
 import AppKit
 
 struct PopoverView: View {
+    private static let accountRowHeight: CGFloat = 44
+    private static let visibleAccountRows: CGFloat = 10
+    private static let accountListHeight = accountRowHeight * visibleAccountRows
+
     @ObservedObject var store: AccountStore
+    let onSearchFieldCreated: (HelperNSTextField) -> Void
     @State private var showingAddSheet = false
     @State private var showingSettingsSheet = false
     @State private var toastMessage: String? = nil
@@ -21,8 +26,14 @@ struct PopoverView: View {
                         .foregroundColor(.secondary)
                         .font(.system(size: 11))
                     
-                EditableTextField(text: $store.searchText, placeholder: "Search accounts...", isPlain: true)
-                    .frame(height: 18)
+                EditableTextField(
+                    text: $store.searchText,
+                    placeholder: "Search accounts...",
+                    isPlain: true,
+                    focusOnAppear: true,
+                    onViewCreated: onSearchFieldCreated
+                )
+                .frame(height: 18)
                     
                     if !store.searchText.isEmpty {
                         Button(action: { store.searchText = "" }) {
@@ -123,10 +134,10 @@ struct PopoverView: View {
                     }
                     Spacer()
                 }
-                .frame(height: 180)
+                .frame(height: Self.accountListHeight)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 2) {
+                    LazyVStack(spacing: 0) {
                         ForEach(store.filteredAccounts) { entry in
                             AccountRowView(
                                 entry: entry,
@@ -144,10 +155,9 @@ struct PopoverView: View {
                             )
                         }
                     }
-                    .padding(.vertical, 4)
                     .padding(.horizontal, 6)
                 }
-                .frame(maxHeight: 360)
+                .frame(height: Self.accountListHeight)
             }
 
             // Bottom Toast Bar

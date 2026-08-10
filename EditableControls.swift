@@ -7,6 +7,8 @@ struct EditableTextField: NSViewRepresentable {
     var font: NSFont = NSFont.systemFont(ofSize: 12)
     var isMonospaced: Bool = false
     var isPlain: Bool = false
+    var focusOnAppear: Bool = false
+    var onViewCreated: ((HelperNSTextField) -> Void)? = nil
     var onChange: ((String) -> Void)? = nil
 
     class Coordinator: NSObject, NSTextFieldDelegate {
@@ -31,6 +33,7 @@ struct EditableTextField: NSViewRepresentable {
     func makeNSView(context: Context) -> HelperNSTextField {
         let textField = HelperNSTextField()
         textField.placeholderString = placeholder
+        textField.focusOnAppear = focusOnAppear
         if isPlain {
             textField.isBordered = false
             textField.drawsBackground = false
@@ -42,6 +45,7 @@ struct EditableTextField: NSViewRepresentable {
         }
         textField.font = isMonospaced ? NSFont.monospacedSystemFont(ofSize: font.pointSize, weight: .regular) : font
         textField.delegate = context.coordinator
+        onViewCreated?(textField)
         return textField
     }
 
@@ -53,21 +57,25 @@ struct EditableTextField: NSViewRepresentable {
 }
 
 class HelperNSTextField: NSTextField {
-    override func becomeFirstResponder() -> Bool {
-        let res = super.becomeFirstResponder()
-        if res {
-            NSApp.activate(ignoringOtherApps: true)
-        }
-        return res
+    var focusOnAppear = false
+    private var didRequestFocus = false
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        requestFocusIfNeeded()
     }
 
-    override func mouseDown(with event: NSEvent) {
-        super.mouseDown(with: event)
-        NSApp.activate(ignoringOtherApps: true)
+    private func requestFocusIfNeeded() {
+        guard focusOnAppear, !didRequestFocus else { return }
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.focusOnAppear, !self.didRequestFocus,
+                  let window = self.window else { return }
+            self.didRequestFocus = window.makeFirstResponder(self)
+        }
     }
 
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        if event.type == .keyDown && event.modifierFlags.contains(.command) {
+        if event.type == .keyDown && (event.modifierFlags.contains(.command) || event.modifierFlags.contains(.control)) {
             let chars = event.charactersIgnoringModifiers?.lowercased() ?? ""
             switch chars {
             case "v":

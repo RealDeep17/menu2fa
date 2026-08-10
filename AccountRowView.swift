@@ -73,7 +73,7 @@ struct AccountRowView: View {
             }
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.vertical, 5)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(isCopied ? Color.green.opacity(0.1) : (isHovering ? Color.secondary.opacity(0.12) : Color.clear))

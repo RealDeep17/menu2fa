@@ -7,7 +7,7 @@ struct AddAccountWindowView: View {
 
     @State private var smartInput: String = ""
     @State private var name: String = ""
-    @State private var issuer: String = "General"
+    @State private var issuer: String = ""
     @State private var secret: String = ""
 
     @State private var parsedAccounts: [Parsed2FA] = []
@@ -30,7 +30,7 @@ struct AddAccountWindowView: View {
 
             // Smart Multi-line Input Box
             VStack(alignment: .leading, spacing: 4) {
-                Text("Smart Input (Single or Multi-linePaste: Secret+Name, Name+Secret, URIs):")
+                Text("Smart Input (Single or Multi-line Paste: Secret+Name+Issuer, Secret+Name, Name+Secret, URIs):")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.secondary)
 
@@ -196,7 +196,7 @@ struct AddAccountWindowView: View {
                 NSSound.beep()
                 onClose()
             } else {
-                errorMessage = "Failed to save accounts to Keychain"
+                errorMessage = "Failed to save accounts"
             }
         } else {
             let cleanName = name.trimmingCharacters(in: .whitespaces)
@@ -217,7 +217,7 @@ struct AddAccountWindowView: View {
                 NSSound.beep()
                 onClose()
             } else {
-                errorMessage = "Failed to save secret to Keychain"
+                errorMessage = "Failed to save secret"
             }
         }
     }

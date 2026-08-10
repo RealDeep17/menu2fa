@@ -18,6 +18,16 @@ if [ -f "$PROJECT_DIR/AppIcon.icns" ]; then
     cp "$PROJECT_DIR/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 fi
 
+echo "🧪 Running Unit Test Suite..."
+swiftc -O -target arm64-apple-macosx12.0 -sdk $(xcrun --show-sdk-path) \
+    "$PROJECT_DIR/TOTPGenerator.swift" \
+    "$PROJECT_DIR/SmartParser.swift" \
+    "$PROJECT_DIR/TOTPEntry.swift" \
+    "$PROJECT_DIR/AccountStore.swift" \
+    "$PROJECT_DIR/TestRunner.swift" \
+    -o "$BUILD_DIR/TestRunner"
+"$BUILD_DIR/TestRunner"
+
 # Compile Swift files for Apple Silicon (arm64)
 swiftc -O \
     -target arm64-apple-macosx12.0 \
@@ -25,7 +35,6 @@ swiftc -O \
     -parse-as-library \
     "$PROJECT_DIR/TOTPGenerator.swift" \
     "$PROJECT_DIR/SmartParser.swift" \
-    "$PROJECT_DIR/KeychainManager.swift" \
     "$PROJECT_DIR/AutoLaunchManager.swift" \
     "$PROJECT_DIR/TOTPEntry.swift" \
     "$PROJECT_DIR/AccountStore.swift" \
@@ -33,6 +42,7 @@ swiftc -O \
     "$PROJECT_DIR/MenuHeaderView.swift" \
     "$PROJECT_DIR/MenuRowView.swift" \
     "$PROJECT_DIR/AccountListView.swift" \
+    "$PROJECT_DIR/HomePopoverView.swift" \
     "$PROJECT_DIR/AddAccountWindowView.swift" \
     "$PROJECT_DIR/SettingsWindowView.swift" \
     "$PROJECT_DIR/AppDelegate.swift" \

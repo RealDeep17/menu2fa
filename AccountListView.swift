@@ -1,6 +1,13 @@
 import SwiftUI
 import AppKit
 
+enum MenuLayout {
+    static let contentWidth: CGFloat = 310
+    static let accountRowHeight: CGFloat = 44
+    static let visibleAccountCount = 10
+    static let accountListHeight = accountRowHeight * CGFloat(visibleAccountCount)
+}
+
 struct SleekScrollView<Content: View>: NSViewRepresentable {
     let content: Content
 
@@ -55,9 +62,9 @@ struct AccountListView: View {
                         .foregroundColor(.secondary)
                     Spacer()
                 }
-                .frame(width: 310, height: 80)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                ScrollView(.vertical, showsIndicators: true) {
+                SleekScrollView {
                     VStack(spacing: 0) {
                         ForEach(store.filteredAccounts) { entry in
                             MenuRowView(
@@ -69,8 +76,8 @@ struct AccountListView: View {
                         }
                     }
                 }
-                .frame(width: 310)
             }
         }
+        .frame(width: MenuLayout.contentWidth, height: MenuLayout.accountListHeight)
     }
 }
