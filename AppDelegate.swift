@@ -74,6 +74,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             name: Notification.Name("SortOrderSettingChanged"),
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(rebuildMenu),
+            name: Notification.Name("MaxAccountsSettingChanged"),
+            object: nil
+        )
 
         // Setup Maccy-style NSMenu attached natively to status item
         menu = NSMenu()
@@ -186,7 +192,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         ))
         
         let count = accountStore.filteredAccounts.count
-        let listHeight: CGFloat = count == 0 ? 80 : min(CGFloat(count) * 44.0, 440.0)
+        let listHeight: CGFloat = count == 0 ? 80 : min(CGFloat(count) * 44.0, 680.0)
         listView.frame = NSRect(x: 0, y: 0, width: 310, height: listHeight)
 
         let listItem = NSMenuItem()

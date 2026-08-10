@@ -33,7 +33,13 @@ class AccountStore: ObservableObject {
         }
 
         let sortNewestFirst = UserDefaults.standard.object(forKey: "sortNewestFirst") != nil ? UserDefaults.standard.bool(forKey: "sortNewestFirst") : true
-        return sortNewestFirst ? Array(base.reversed()) : base
+        let sorted = sortNewestFirst ? Array(base.reversed()) : base
+
+        let maxAccounts = UserDefaults.standard.object(forKey: "maxVisibleAccounts") != nil ? UserDefaults.standard.integer(forKey: "maxVisibleAccounts") : 10
+        if maxAccounts > 0 && sorted.count > maxAccounts {
+            return Array(sorted.prefix(maxAccounts))
+        }
+        return sorted
     }
 
     func loadAccounts() {

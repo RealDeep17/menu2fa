@@ -70,7 +70,7 @@ struct AccountListView: View {
                     }
                 }
                 .frame(width: 310)
-                .frame(maxHeight: 440)
+                .frame(maxHeight: 680)
             }
         }
     }
