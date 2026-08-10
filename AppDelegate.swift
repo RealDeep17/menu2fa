@@ -80,6 +80,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             name: Notification.Name("MaxAccountsSettingChanged"),
             object: nil
         )
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(rebuildMenu),
+            name: Notification.Name("SearchTextChanged"),
+            object: nil
+        )
 
         // Setup Maccy-style NSMenu attached natively to status item
         menu = NSMenu()
