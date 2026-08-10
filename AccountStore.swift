@@ -3,11 +3,7 @@ import Combine
 
 class AccountStore: ObservableObject {
     @Published var accounts: [TOTPEntry] = []
-    @Published var searchText: String = "" {
-        didSet {
-            NotificationCenter.default.post(name: Notification.Name("SearchTextChanged"), object: nil)
-        }
-    }
+    @Published var searchText: String = ""
     @Published var lastCopiedID: UUID? = nil
 
     private var secretsCache: [UUID: String] = [:]
