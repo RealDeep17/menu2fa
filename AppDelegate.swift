@@ -143,12 +143,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func menuWillOpen(_ menu: NSMenu) {
-        NSApp.activate(ignoringOtherApps: true)
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
+        }
         let persist = UserDefaults.standard.bool(forKey: "persistSearchText")
         if !persist {
             accountStore.searchText = ""
         }
-        rebuildMenu()
     }
 
     func menuDidClose(_ menu: NSMenu) {
