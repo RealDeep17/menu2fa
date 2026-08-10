@@ -58,8 +58,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             } else {
                 button.title = "🔑"
             }
-            button.target = self
-            button.action = #selector(statusItemClicked(_:))
         }
         updateStatusItemStyle()
 
@@ -87,6 +85,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         menu = NSMenu()
         menu.delegate = self
         menu.autoenablesItems = false
+        statusItem.menu = menu
 
         rebuildMenu()
     }
@@ -143,21 +142,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         button.title = showText ? " 2FA" : ""
     }
 
-    @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
-        let persist = UserDefaults.standard.bool(forKey: "persistSearchText")
-        if !persist {
-            accountStore.searchText = ""
-        }
-        rebuildMenu()
-        NSApp.activate(ignoringOtherApps: true)
-        let location = NSPoint(x: 0, y: sender.bounds.height + 4)
-        menu.popUp(positioning: nil, at: location, in: sender)
-    }
-
     func menuWillOpen(_ menu: NSMenu) {
         let persist = UserDefaults.standard.bool(forKey: "persistSearchText")
         if !persist {
             accountStore.searchText = ""
+        }
+        DispatchQueue.main.async {
+            NSApp.activate(ignoringOtherApps: true)
         }
     }
 

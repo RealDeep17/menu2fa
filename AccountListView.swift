@@ -57,7 +57,7 @@ struct AccountListView: View {
                 }
                 .frame(width: 310, height: 80)
             } else {
-                SleekScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 0) {
                         ForEach(store.filteredAccounts) { entry in
                             MenuRowView(
@@ -70,7 +70,6 @@ struct AccountListView: View {
                     }
                 }
                 .frame(width: 310)
-                .frame(maxHeight: 680)
             }
         }
     }

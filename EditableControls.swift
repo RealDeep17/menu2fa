@@ -53,6 +53,19 @@ struct EditableTextField: NSViewRepresentable {
 }
 
 class HelperNSTextField: NSTextField {
+    override func becomeFirstResponder() -> Bool {
+        let res = super.becomeFirstResponder()
+        if res {
+            NSApp.activate(ignoringOtherApps: true)
+        }
+        return res
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        super.mouseDown(with: event)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if event.type == .keyDown && event.modifierFlags.contains(.command) {
             let chars = event.charactersIgnoringModifiers?.lowercased() ?? ""
