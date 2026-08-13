@@ -13,10 +13,12 @@ if [ -f "./build.sh" ]; then
 else
     # Fix executable permissions, clear quarantine, and re-sign ad-hoc for this Mac
     if [ -d "$APP_TARGET" ]; then
-        chmod +x "$APP_TARGET/Contents/MacOS/Menu2FA"
-        xattr -cr "$APP_TARGET" || true
+        chmod -R 755 "$APP_TARGET"
+        xattr -dr com.apple.quarantine "$APP_TARGET" 2>/dev/null || true
+        xattr -cr "$APP_TARGET" 2>/dev/null || true
         codesign --force --deep --sign - "$APP_TARGET"
-        echo "✅ Permissions & Ad-hoc signature updated for $APP_TARGET!"
+        codesign --verify --deep --strict "$APP_TARGET"
+        echo "✅ Permissions, quarantine removal, & signature verified for $APP_TARGET!"
     else
         echo "❌ Menu2FA.app not found in /Applications. Please copy Menu2FA.app to /Applications first."
         exit 1

@@ -48,19 +48,37 @@ swiftc -O \
     "$PROJECT_DIR/AppDelegate.swift" \
     -o "$MacOS_DIR/Menu2FA"
 
-# Set executable permission
-chmod +x "$MacOS_DIR/Menu2FA"
+# Set recursive permissions
+echo "🔒 Setting permissions (chmod -R 755)..."
+chmod -R 755 "$APP_DIR"
 
-# Code sign ad-hoc and clear quarantine attributes
-xattr -cr "$APP_DIR" || true
+# Strip quarantine attributes
+echo "🧹 Removing quarantine attributes (xattr)..."
+xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true
+xattr -cr "$APP_DIR" 2>/dev/null || true
+
+# Code sign ad-hoc
+echo "✍️ Deep ad-hoc code signing (codesign --force --deep --sign -)..."
 codesign --force --deep --sign - "$APP_DIR"
 
+# Verify code signature
+echo "🔍 Verifying signature (codesign --verify --deep --strict)..."
+codesign --verify --deep --strict "$APP_DIR"
+
+# Package distribution archive using ditto
+echo "📦 Packaging distribution zip with ditto..."
+ditto -c -k --keepParent "$APP_DIR" "$BUILD_DIR/Menu2FA.zip"
+
 # Copy to /Applications
-echo "📦 Installing Menu2FA.app to /Applications..."
+echo "🚀 Installing Menu2FA.app to /Applications..."
 rm -rf "/Applications/Menu2FA.app" || true
 cp -R "$APP_DIR" "/Applications/Menu2FA.app"
-chmod +x "/Applications/Menu2FA.app/Contents/MacOS/Menu2FA"
-xattr -cr "/Applications/Menu2FA.app" || true
+chmod -R 755 "/Applications/Menu2FA.app"
+xattr -dr com.apple.quarantine "/Applications/Menu2FA.app" 2>/dev/null || true
+xattr -cr "/Applications/Menu2FA.app" 2>/dev/null || true
 codesign --force --deep --sign - "/Applications/Menu2FA.app"
+codesign --verify --deep --strict "/Applications/Menu2FA.app"
 
-echo "✅ Successfully built Apple Silicon Menu2FA.app (arm64)!"
+echo "✅ Successfully built, signed, verified, and packaged Menu2FA.app (arm64)!"
+echo "   App Location: /Applications/Menu2FA.app"
+echo "   Zip Package:  $BUILD_DIR/Menu2FA.zip"

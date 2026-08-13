@@ -76,37 +76,44 @@ chmod +x install.sh build.sh
 ./install.sh
 ```
 
-This will run the full unit test suite, compile the binary for Apple Silicon, package it into `/Applications/Menu2FA.app`, sign it ad-hoc, and launch the application into your menu bar.
+This will run the full unit test suite, compile the binary for Apple Silicon, package it into `/Applications/Menu2FA.app`, sign and verify it, and launch the application into your menu bar.
 
 ---
 
 ### Option 2: Build from Source (`build.sh`)
 
-You can build and package `Menu2FA.app` directly using the provided build script:
+You can build, test, and package `Menu2FA.app` directly using the provided build script:
 
 ```bash
 chmod +x build.sh
 ./build.sh
 ```
 
-The compiled application will be generated in `build/Menu2FA.app` and automatically installed to `/Applications/Menu2FA.app`.
+#### What happens automatically when you build:
+- **Permissions (`chmod -R 755`):** Sets executable permissions recursively on the entire app bundle.
+- **Quarantine Removal (`xattr -dr com.apple.quarantine`):** Strips any lingering macOS extended quarantine attributes.
+- **Deep Ad-Hoc Signing (`codesign --force --deep --sign -`):** Deep-signs the binary and embedded frameworks/resources for Apple Silicon (ARM64).
+- **Signature Verification (`codesign --verify --deep --strict`):** Strictly validates that the bundle seal is untampered.
+- **Mac-Native Packaging (`ditto -c -k --keepParent`):** Automatically creates a clean, codesign-preserved distribution zip at `build/Menu2FA.zip`.
+- **System Installation:** Automatically installs the signed application to `/Applications/Menu2FA.app`.
 
 ---
 
 ## 🛡️ Fix "Menu2FA Cannot Be Opened" / Gatekeeper on Other Macs
 
-When moving `Menu2FA.app` between Macs (via AirDrop, USB, Slack, or ZIP), macOS attaches Gatekeeper quarantine attributes.
+When transferring `Menu2FA.app` to another Mac (via AirDrop, USB, Slack, or ZIP), macOS attaches Gatekeeper quarantine attributes.
 
 Run this 1-line command in Terminal on the target Mac:
 
 ```bash
-chmod +x /Applications/Menu2FA.app/Contents/MacOS/Menu2FA && xattr -cr /Applications/Menu2FA.app && codesign --force --deep --sign - /Applications/Menu2FA.app
+chmod -R 755 /Applications/Menu2FA.app && xattr -dr com.apple.quarantine /Applications/Menu2FA.app 2>/dev/null || true && xattr -cr /Applications/Menu2FA.app 2>/dev/null || true && codesign --force --deep --sign - /Applications/Menu2FA.app && codesign --verify --deep --strict /Applications/Menu2FA.app
 ```
 
 This automatically:
-1. Restores executable permissions on the binary.
-2. Clears macOS Gatekeeper quarantine (`xattr -cr`).
-3. Ad-hoc signs the application for that specific machine.
+1. Restores recursive executable permissions on the bundle (`chmod -R 755`).
+2. Clears macOS Gatekeeper quarantine (`xattr -dr com.apple.quarantine` and `xattr -cr`).
+3. Ad-hoc signs the application for that specific machine (`codesign --force --deep --sign -`).
+4. Validates that the signature is complete and untampered (`codesign --verify --deep --strict`).
 
 Then launch the app with:
 ```bash
