@@ -28,8 +28,8 @@
 | M1 | Codebase Audit & Dead Code Removal | Remove 4 legacy views, clean dead imports, fix observer leaks & timer handling | none | DONE |
 | M2 | Secure Encrypted Local Vault | Implement CryptoKit AES-256-GCM vault, local key manager (0600), zero Keychain dialogs, migration & recovery | M1 | DONE |
 | M3 | Component Hardening & Sanitization | Extend TOTPGenerator (SHA1/256/512), harden SmartParser & AccountStore deduplication, sanitize QR references | M1, M2 | DONE |
-| M4 | Test Suite Expansion & Build Verification | Expand TestRunner.swift with full assertion matrix; verify clean build via ./build.sh | M1, M2, M3 | PLANNED |
-| M5 | Git Commit & Checkpoint | Create clean git commits capturing all changes with detailed messages | M1, M2, M3, M4 | PLANNED |
+| M4 | Test Suite Expansion & Build Verification | Expand TestRunner.swift with full assertion matrix; verify clean build via ./build.sh | M1, M2, M3 | DONE |
+| M5 | Git Commit & Checkpoint | Create clean git commits capturing all changes with detailed messages | M1, M2, M3, M4 | DONE |
 
 ## Interface Contracts
 ### `VaultKeyManager` & `VaultEncryptor` (M2)
