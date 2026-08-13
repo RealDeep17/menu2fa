@@ -233,10 +233,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSWindowD
         }
     }
 
+    deinit {
+        if let keyboardMonitor {
+            NSEvent.removeMonitor(keyboardMonitor)
+            self.keyboardMonitor = nil
+        }
+        NotificationCenter.default.removeObserver(self)
+    }
+
     func applicationWillTerminate(_ notification: Notification) {
         if let keyboardMonitor {
             NSEvent.removeMonitor(keyboardMonitor)
+            self.keyboardMonitor = nil
         }
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func setupMainMenu() {
@@ -376,7 +386,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSPopoverDelegate, NSWindowD
             if !parsedAccounts.isEmpty {
                 var addedCount = 0
                 for account in parsedAccounts {
-                    if accountStore.addAccount(name: account.name, issuer: account.issuer, secret: account.secret) {
+                    if accountStore.addAccount(name: account.name, issuer: account.issuer, secret: account.secret, algorithm: account.algorithm, digits: account.digits, period: account.period) {
                         addedCount += 1
                     }
                 }

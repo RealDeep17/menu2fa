@@ -12,7 +12,6 @@
   - `4DM2M47UQISBDUHV\tvasilolein54@gmail.com`
   - `vasilolein54@gmail.com 4DM2M47UQISBDUHV`
   - `otpauth://totp/...` URIs.
-- 📷 **Screen & Clipboard QR Scanner:** Scan 2FA QR codes directly from your display screen (`⌘S`) or copied clipboard image.
 - ⏳ **Live 30s Countdown:** Real-time countdown badge indicating remaining validity seconds of TOTP codes.
 - 📋 **1-Click Copy:** Click any account row to instantly copy the 6-digit code to your clipboard.
 - ⚙️ **Preferences:** Toggle between **Icon Only (Compact)** or **Icon + Text ("2FA")** menu bar styles, plus Launch at Login support.

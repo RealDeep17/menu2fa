@@ -9,15 +9,23 @@ struct MenuRowView: View {
     let onCopy: () -> Void
 
     @State private var otpCode: String = ""
-    @State private var timeRemaining: Int = TOTPGenerator.timeRemaining()
+    @State private var timeRemaining: Int = 30
     @State private var isHovering = false
 
-    let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+    private static let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
 
     var formattedOTP: String {
-        guard otpCode.count == 6 else { return otpCode }
-        let index = otpCode.index(otpCode.startIndex, offsetBy: 3)
-        return "\(otpCode[..<index]) \(otpCode[index...])"
+        if otpCode.count == 6 {
+            let index = otpCode.index(otpCode.startIndex, offsetBy: 3)
+            return "\(otpCode[..<index]) \(otpCode[index...])"
+        } else if otpCode.count == 7 {
+            let index = otpCode.index(otpCode.startIndex, offsetBy: 3)
+            return "\(otpCode[..<index]) \(otpCode[index...])"
+        } else if otpCode.count == 8 {
+            let index = otpCode.index(otpCode.startIndex, offsetBy: 4)
+            return "\(otpCode[..<index]) \(otpCode[index...])"
+        }
+        return otpCode
     }
 
     var body: some View {
@@ -45,7 +53,7 @@ struct MenuRowView: View {
 
             Spacer()
 
-            // 6-digit OTP Code (Updates live!)
+            // OTP Code (Updates live!)
             Text(formattedOTP)
                 .font(.system(size: 15, weight: .bold, design: .monospaced))
                 .foregroundColor(.primary)
@@ -85,14 +93,14 @@ struct MenuRowView: View {
         .onAppear {
             updateCode()
         }
-        .onReceive(timer) { _ in
+        .onReceive(Self.timer) { _ in
             updateCode()
         }
     }
 
     private func updateCode() {
         let newOTP = store.generateOTP(for: entry)
-        let newRemaining = TOTPGenerator.timeRemaining()
+        let newRemaining = TOTPGenerator.timeRemaining(period: entry.period)
         if otpCode != newOTP {
             otpCode = newOTP
         }
@@ -101,3 +109,4 @@ struct MenuRowView: View {
         }
     }
 }
+
