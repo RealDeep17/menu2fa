@@ -9,8 +9,8 @@
 - 🚀 **Pure Menu Bar App:** Lives exclusively in your macOS status bar (`LSUIElement`).
 - 🎨 **Maccy-Style Dropdown Menu:** Clean native `NSMenu` dropdown with keyboard shortcuts (`⌘1`, `⌘2`, ...).
 - ⚡ **Smart Single & Multi-Account Parser:** Accepts single or multi-line pastes of:
-  - `4DM2M47UQISBDUHV\tvasilolein54@gmail.com`
-  - `vasilolein54@gmail.com 4DM2M47UQISBDUHV`
+  - `HXDMVJECJJWSRB3H\tuser@example.com`
+  - `user@example.com HXDMVJECJJWSRB3H`
   - `otpauth://totp/...` URIs.
 - ⏳ **Live 30s Countdown:** Real-time countdown badge indicating remaining validity seconds of TOTP codes.
 - 📋 **1-Click Copy:** Click any account row to instantly copy the 6-digit code to your clipboard.

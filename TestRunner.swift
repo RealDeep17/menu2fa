@@ -163,47 +163,47 @@ struct TestRunner {
         print("📌 Testing SmartParser logic, URI edge cases & normalization...")
 
         // Case A: Secret + Email + Issuer
-        let p0 = SmartParser.parse("4DM2M47UQISBDUHV vasilolein54@gmail.com GitHub")
+        let p0 = SmartParser.parse("HXDMVJECJJWSRB3H alex@example.com GitHub")
         assertTrue(p0 != nil, "Parsed secret + email + issuer")
-        assertEqual(p0?.name, "vasilolein54@gmail.com", "P0 Name")
+        assertEqual(p0?.name, "alex@example.com", "P0 Name")
         assertEqual(p0?.issuer, "GitHub", "P0 Issuer")
-        assertEqual(p0?.secret, "4DM2M47UQISBDUHV", "P0 Secret")
+        assertEqual(p0?.secret, "HXDMVJECJJWSRB3H", "P0 Secret")
         assertEqual(p0?.algorithm, .sha1, "P0 default algorithm SHA1")
         assertEqual(p0?.digits, 6, "P0 default digits 6")
         assertEqual(p0?.period, 30.0, "P0 default period 30")
 
         // Case A2: Secret + Email
-        let p1 = SmartParser.parse("4DM2M47UQISBDUHV vasilolein54@gmail.com")
+        let p1 = SmartParser.parse("HXDMVJECJJWSRB3H alex@example.com")
         assertTrue(p1 != nil, "Parsed secret + email")
-        assertEqual(p1?.name, "vasilolein54@gmail.com", "P1 Name")
-        assertEqual(p1?.secret, "4DM2M47UQISBDUHV", "P1 Secret")
+        assertEqual(p1?.name, "alex@example.com", "P1 Name")
+        assertEqual(p1?.secret, "HXDMVJECJJWSRB3H", "P1 Secret")
 
         // Case B: Email + Secret
-        let p2 = SmartParser.parse("vasilolein54@gmail.com 4DM2M47UQISBDUHV")
+        let p2 = SmartParser.parse("alex@example.com HXDMVJECJJWSRB3H")
         assertTrue(p2 != nil, "Parsed email + secret")
-        assertEqual(p2?.name, "vasilolein54@gmail.com", "P2 Name")
-        assertEqual(p2?.secret, "4DM2M47UQISBDUHV", "P2 Secret")
+        assertEqual(p2?.name, "alex@example.com", "P2 Name")
+        assertEqual(p2?.secret, "HXDMVJECJJWSRB3H", "P2 Secret")
 
-        // Case C: Base32 word ambiguity ("ACCOUNTS 4DM2M47UQISBDUHV")
-        let p3 = SmartParser.parse("ACCOUNTS 4DM2M47UQISBDUHV")
+        // Case C: Base32 word ambiguity ("ACCOUNTS HXDMVJECJJWSRB3H")
+        let p3 = SmartParser.parse("ACCOUNTS HXDMVJECJJWSRB3H")
         assertTrue(p3 != nil, "Parsed Base32 label + secret")
         assertEqual(p3?.name, "ACCOUNTS", "P3 Name")
-        assertEqual(p3?.secret, "4DM2M47UQISBDUHV", "P3 Secret picked true key over Base32 label")
+        assertEqual(p3?.secret, "HXDMVJECJJWSRB3H", "P3 Secret picked true key over Base32 label")
 
-        // Case D: Prefix issuer with colon ("GitHub: user@example.com 4DM2M47UQISBDUHV")
-        let p4 = SmartParser.parse("GitHub: user@example.com 4DM2M47UQISBDUHV")
+        // Case D: Prefix issuer with colon ("GitHub: user@example.com HXDMVJECJJWSRB3H")
+        let p4 = SmartParser.parse("GitHub: user@example.com HXDMVJECJJWSRB3H")
         assertTrue(p4 != nil, "Parsed issuer: name + secret")
         assertEqual(p4?.issuer, "GitHub", "P4 Issuer")
         assertEqual(p4?.name, "user@example.com", "P4 Name")
-        assertEqual(p4?.secret, "4DM2M47UQISBDUHV", "P4 Secret")
+        assertEqual(p4?.secret, "HXDMVJECJJWSRB3H", "P4 Secret")
 
         // Case E: otpauth:// URI with algorithm, digits, period, uppercase scheme/host, and encoded colons
-        let uri1 = "OTPAUTH://TOTP/Google:vasilolein54@gmail.com?secret=4DM2M47UQISBDUHV&issuer=Google&algorithm=SHA256&digits=8&period=60"
+        let uri1 = "OTPAUTH://TOTP/Google:alex@example.com?secret=HXDMVJECJJWSRB3H&issuer=Google&algorithm=SHA256&digits=8&period=60"
         let p5 = SmartParser.parse(uri1)
         assertTrue(p5 != nil, "Parsed OTPAUTH://TOTP/ URI with custom params")
         assertEqual(p5?.issuer, "Google", "P5 Issuer")
-        assertEqual(p5?.name, "vasilolein54@gmail.com", "P5 Name")
-        assertEqual(p5?.secret, "4DM2M47UQISBDUHV", "P5 Secret")
+        assertEqual(p5?.name, "alex@example.com", "P5 Name")
+        assertEqual(p5?.secret, "HXDMVJECJJWSRB3H", "P5 Secret")
         assertEqual(p5?.algorithm, .sha256, "P5 algorithm SHA256")
         assertEqual(p5?.digits, 8, "P5 digits 8")
         assertEqual(p5?.period, 60.0, "P5 period 60.0")
@@ -220,12 +220,12 @@ struct TestRunner {
 
         // Case F: Multi-line parsing
         let multi = """
-        4DM2M47UQISBDUHV vasilolein54@gmail.com
+        HXDMVJECJJWSRB3H alex@example.com
         user2@example.com JBSWY3DPEHPK3PXP
         """
         let multiResults = SmartParser.parseMultiple(multi)
         assertEqual(multiResults.count, 2, "Multi-line parsed 2 entries")
-        assertEqual(multiResults[0].secret, "4DM2M47UQISBDUHV", "Multi line item 0 secret")
+        assertEqual(multiResults[0].secret, "HXDMVJECJJWSRB3H", "Multi line item 0 secret")
         assertEqual(multiResults[1].secret, "JBSWY3DPEHPK3PXP", "Multi line item 1 secret")
 
         // --- 2.1 Percent-encoded URIs (%20, %40, %2B) ---
@@ -273,9 +273,9 @@ struct TestRunner {
         assertTrue(SmartParser.parse("otpauth://totp/Google:user@gmail.com") == nil, "URI missing secret returns nil")
 
         // --- 2.7 Unicode Dashes & Whitespace Normalization ---
-        let unicodeSecret = "\u{00A0}4dm2\u{2012}m47u\u{2013}qisb\u{2014}duhv\u{2015}===\u{200B}\u{2009}"
+        let unicodeSecret = "\u{00A0}hxdm\u{2012}vjec\u{2013}jjws\u{2014}rb3h\u{2015}===\u{200B}\u{2009}"
         let cleanedUnicode = SmartParser.cleanSecret(unicodeSecret)
-        assertEqual(cleanedUnicode, "4DM2M47UQISBDUHV", "Cleaned secret with figure dash, horizontal bar, thin space, zero-width space, and padding")
+        assertEqual(cleanedUnicode, "HXDMVJECJJWSRB3H", "Cleaned secret with figure dash, horizontal bar, thin space, zero-width space, and padding")
 
         // --- 2.8 Standalone Secret Key Input ---
         let pStandalone = SmartParser.parse("JBSWY3DPEHPK3PXP")
@@ -293,17 +293,17 @@ struct TestRunner {
     static func testBase32Decoding() {
         print("📌 Testing Base32 cleaning & decoding...")
 
-        let raw = " \t4dm2 - m47u – qisb — duhv = \n\u{00A0}"
+        let raw = " \thxdm - vjec – jjws — rb3h = \n\u{00A0}"
         let cleaned = SmartParser.cleanSecret(raw)
-        assertEqual(cleaned, "4DM2M47UQISBDUHV", "Cleaned secret string with spaces, tabs, newlines, en-dashes, em-dashes, equals")
+        assertEqual(cleaned, "HXDMVJECJJWSRB3H", "Cleaned secret string with spaces, tabs, newlines, en-dashes, em-dashes, equals")
 
         let decoded = TOTPGenerator.decodeBase32(cleaned)
         assertTrue(decoded != nil && decoded!.count > 0, "Decoded Base32 binary data")
 
         // Additional Unicode whitespace and dash tests
-        let unicodeRaw = "\u{2009}4DM2\u{2012}M47U\u{2015}QISB\u{200B}DUHV===="
+        let unicodeRaw = "\u{2009}HXDM\u{2012}VJEC\u{2015}JJWS\u{200B}RB3H===="
         let unicodeCleaned = SmartParser.cleanSecret(unicodeRaw)
-        assertEqual(unicodeCleaned, "4DM2M47UQISBDUHV", "Cleaned secret with thin space, figure dash, horizontal bar, zero-width space")
+        assertEqual(unicodeCleaned, "HXDMVJECJJWSRB3H", "Cleaned secret with thin space, figure dash, horizontal bar, zero-width space")
     }
 
     // MARK: - 4. AccountStore & Storage Tests
@@ -316,7 +316,7 @@ struct TestRunner {
         assertEqual(store.accounts.count, 0, "Store cleared initially")
 
         // Add 1st account with explicit issuer "GitHub" and custom TOTP parameters
-        let added1 = store.addAccount(name: "test1@example.com", issuer: "GitHub", secret: "4DM2M47UQISBDUHV", algorithm: .sha256, digits: 8, period: 60)
+        let added1 = store.addAccount(name: "test1@example.com", issuer: "GitHub", secret: "HXDMVJECJJWSRB3H", algorithm: .sha256, digits: 8, period: 60)
         assertTrue(added1, "Added 1st account")
         assertEqual(store.accounts.count, 1, "1 account in store")
         assertEqual(store.accounts[0].algorithm, .sha256, "Stored algorithm SHA256")
@@ -330,7 +330,7 @@ struct TestRunner {
         assertEqual(store.accounts[1].issuer, "GitHub", "Fallback to last used issuer GitHub")
 
         // Add duplicate account with same secret -> should deduplicate and update name, issuer, and params
-        let addedDup = store.addAccount(name: "updated_name@example.com", issuer: "GitHub", secret: "4DM2M47UQISBDUHV", algorithm: .sha512, digits: 7, period: 15)
+        let addedDup = store.addAccount(name: "updated_name@example.com", issuer: "GitHub", secret: "HXDMVJECJJWSRB3H", algorithm: .sha512, digits: 7, period: 15)
         assertTrue(addedDup, "Handled duplicate secret")
         assertEqual(store.accounts.count, 2, "Store count remains 2 due to deduplication")
         assertEqual(store.accounts[0].name, "updated_name@example.com", "Account updated name")
@@ -338,7 +338,7 @@ struct TestRunner {
         assertEqual(store.accounts[0].digits, 7, "Deduplicated account updated digits to 7")
 
         // Case-insensitive secret deduplication (lowercase secret input)
-        let addedLowerDup = store.addAccount(name: "updated_name_lower@example.com", issuer: "GitHub", secret: "4dm2m47uqisbduhv")
+        let addedLowerDup = store.addAccount(name: "updated_name_lower@example.com", issuer: "GitHub", secret: "hxdmvjecjjwsrb3h")
         assertTrue(addedLowerDup, "Deduplicated lowercase secret input")
         assertEqual(store.accounts.count, 2, "Store count remains 2 after lowercase secret deduplication")
         assertEqual(store.accounts[0].name, "updated_name_lower@example.com", "Account updated name via lowercase secret deduplication")
@@ -359,7 +359,7 @@ struct TestRunner {
         let store3 = AccountStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
         store3.deleteAllAccounts()
         assertTrue(store3.addAccount(name: "user1", issuer: "Iss1", secret: "JBSWY3DPEHPK3PXP"), "Added user1")
-        assertTrue(store3.addAccount(name: "user2", issuer: "Iss2", secret: "4DM2M47UQISBDUHV"), "Added user2")
+        assertTrue(store3.addAccount(name: "user2", issuer: "Iss2", secret: "HXDMVJECJJWSRB3H"), "Added user2")
         assertTrue(store3.addAccount(name: "user3", issuer: "Iss3", secret: "GEZDGNBVGY3TQOJQ"), "Added user3")
         assertEqual(store3.accounts.count, 3, "Added 3 distinct accounts")
 
@@ -380,7 +380,7 @@ struct TestRunner {
         let exportStore = AccountStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
         exportStore.deleteAllAccounts()
         assertTrue(exportStore.addAccount(name: "acc1", issuer: "Iss1", secret: "JBSWY3DPEHPK3PXP", algorithm: .sha1, digits: 6, period: 30), "Added export acc1")
-        assertTrue(exportStore.addAccount(name: "acc2", issuer: "Iss2", secret: "4DM2M47UQISBDUHV", algorithm: .sha256, digits: 8, period: 60), "Added export acc2")
+        assertTrue(exportStore.addAccount(name: "acc2", issuer: "Iss2", secret: "HXDMVJECJJWSRB3H", algorithm: .sha256, digits: 8, period: 60), "Added export acc2")
         assertTrue(exportStore.addAccount(name: "acc3", issuer: "Iss3", secret: "GEZDGNBVGY3TQOJQ", algorithm: .sha512, digits: 7, period: 15), "Added export acc3")
 
         guard let exportedJSON = exportStore.exportVault() else {

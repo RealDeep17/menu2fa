@@ -86,7 +86,7 @@ struct AddAccountWindowView: View {
                         Text("Account Name:")
                             .font(.system(size: 11, weight: .medium))
                             .frame(width: 90, alignment: .leading)
-                        EditableTextField(text: $name, placeholder: "e.g. vasilolein54@gmail.com")
+                        EditableTextField(text: $name, placeholder: "e.g. user@example.com")
                             .frame(height: 22)
                     }
 
@@ -102,7 +102,7 @@ struct AddAccountWindowView: View {
                         Text("Secret Key:")
                             .font(.system(size: 11, weight: .medium))
                             .frame(width: 90, alignment: .leading)
-                        EditableTextField(text: $secret, placeholder: "e.g. 4DM2M47UQISBDUHV", isMonospaced: true, onChange: { newValue in
+                        EditableTextField(text: $secret, placeholder: "e.g. HXDMVJECJJWSRB3H", isMonospaced: true, onChange: { newValue in
                             updatePreview(secret: newValue)
                         })
                         .frame(height: 22)
