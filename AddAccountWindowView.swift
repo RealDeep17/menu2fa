@@ -173,7 +173,10 @@ struct AddAccountWindowView: View {
 
     private func updatePreview(secret: String) {
         let clean = SmartParser.cleanSecret(secret)
-        if SmartParser.isBase32Secret(clean), let code = TOTPGenerator.generateOTP(secret: clean) {
+        let alg = parsedAccounts.first?.algorithm ?? .sha1
+        let dig = parsedAccounts.first?.digits ?? 6
+        let per = parsedAccounts.first?.period ?? 30.0
+        if SmartParser.isBase32Secret(clean), let code = TOTPGenerator.generateTOTP(secret: clean, algorithm: alg, digits: dig, period: per) {
             self.previewOTP = code
             self.errorMessage = nil
         } else {
@@ -188,7 +191,7 @@ struct AddAccountWindowView: View {
         if parsedAccounts.count > 1 {
             var added = 0
             for item in parsedAccounts {
-                if store.addAccount(name: item.name, issuer: item.issuer, secret: item.secret) {
+                if store.addAccount(name: item.name, issuer: item.issuer, secret: item.secret, algorithm: item.algorithm, digits: item.digits, period: item.period) {
                     added += 1
                 }
             }
@@ -213,7 +216,11 @@ struct AddAccountWindowView: View {
                 return
             }
 
-            if store.addAccount(name: cleanName, issuer: cleanIssuer.isEmpty ? "General" : cleanIssuer, secret: cleanSecret) {
+            let alg = parsedAccounts.first?.algorithm ?? .sha1
+            let dig = parsedAccounts.first?.digits ?? 6
+            let per = parsedAccounts.first?.period ?? 30.0
+
+            if store.addAccount(name: cleanName, issuer: cleanIssuer.isEmpty ? "General" : cleanIssuer, secret: cleanSecret, algorithm: alg, digits: dig, period: per) {
                 NSSound.beep()
                 onClose()
             } else {
@@ -222,3 +229,4 @@ struct AddAccountWindowView: View {
         }
     }
 }
+

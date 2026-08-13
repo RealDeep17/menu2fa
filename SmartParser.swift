@@ -1,10 +1,31 @@
 import Foundation
 
-struct Parsed2FA {
-    let name: String
-    let issuer: String
-    let secret: String
+struct ParsedOTPAccount: Equatable {
+    var name: String
+    var issuer: String
+    var secret: String
+    var algorithm: OTPAlgorithm
+    var digits: Int
+    var period: TimeInterval
+
+    init(
+        name: String,
+        issuer: String,
+        secret: String,
+        algorithm: OTPAlgorithm = .sha1,
+        digits: Int = 6,
+        period: TimeInterval = 30.0
+    ) {
+        self.name = name
+        self.issuer = issuer
+        self.secret = secret
+        self.algorithm = algorithm
+        self.digits = digits
+        self.period = period
+    }
 }
+
+typealias Parsed2FA = ParsedOTPAccount
 
 struct SmartParser {
     /// Validates if a string looks like a Base32 secret key
@@ -53,21 +74,22 @@ struct SmartParser {
         return score
     }
 
-    /// Cleans secret key by stripping spaces, hyphens, and equals signs
+    /// Cleans secret key by stripping spaces, tabs, newlines, non-breaking spaces, hyphens, en-dashes, em-dashes, figure dashes, horizontal bars, equals signs, and zero-width spaces
     static func cleanSecret(_ string: String) -> String {
-        return string.uppercased()
-            .replacingOccurrences(of: " ", with: "")
-            .replacingOccurrences(of: "-", with: "")
-            .replacingOccurrences(of: "=", with: "")
+        let uppercase = string.uppercased()
+        let toRemove: Set<Character> = ["-", "–", "—", "‒", "―", "=", "\u{200B}", "\u{200C}", "\u{200D}", "\u{FEFF}"]
+        return uppercase.filter { char in
+            !char.isWhitespace && !char.isNewline && !toRemove.contains(char)
+        }
     }
 
-    /// Parses multi-line input text into array of Parsed2FA items
-    static func parseMultiple(_ input: String) -> [Parsed2FA] {
+    /// Parses multi-line input text into array of ParsedOTPAccount items
+    static func parseMultiple(_ input: String) -> [ParsedOTPAccount] {
         let lines = input.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
 
-        var results: [Parsed2FA] = []
+        var results: [ParsedOTPAccount] = []
         for line in lines {
             if let parsed = parse(line) {
                 results.append(parsed)
@@ -76,8 +98,8 @@ struct SmartParser {
         return results
     }
 
-    /// Smartly parses raw text input into a single Parsed2FA
-    static func parse(_ input: String) -> Parsed2FA? {
+    /// Smartly parses raw text input into a single ParsedOTPAccount
+    static func parse(_ input: String) -> ParsedOTPAccount? {
         let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
@@ -132,12 +154,10 @@ struct SmartParser {
                 name = parsedName
             } else if secretIndex == 0 {
                 // Format: SECRET + NAME + ISSUER
-                // e.g. "4DM2M47UQISBDUHV vasilolein54@gmail.com GitHub"
                 name = remainingComponents[0]
                 issuer = remainingComponents[1]
             } else if remainingComponents[1].contains("@") || remainingComponents[1].contains(".") {
                 // Format: ISSUER + NAME + SECRET
-                // e.g. "GitHub vasilolein54@gmail.com 4DM2M47UQISBDUHV"
                 issuer = remainingComponents[0]
                 name = remainingComponents[1]
             } else {
@@ -161,18 +181,18 @@ struct SmartParser {
             }
         }
 
-        return Parsed2FA(name: name, issuer: issuer, secret: cleanSecretKey)
+        return ParsedOTPAccount(name: name, issuer: issuer, secret: cleanSecretKey)
     }
 
-    private static func parseOTPAuthURI(_ uriString: String) -> Parsed2FA? {
+    private static func parseOTPAuthURI(_ uriString: String) -> ParsedOTPAccount? {
         var encodedURI = uriString
         if uriString.contains(" ") {
             encodedURI = uriString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? uriString
         }
 
         guard let url = URL(string: encodedURI) ?? URL(string: uriString),
-              url.scheme == "otpauth",
-              url.host == "totp" else { return nil }
+              let scheme = url.scheme?.lowercased(), scheme == "otpauth",
+              let host = url.host?.lowercased(), host == "totp" else { return nil }
 
         let components = URLComponents(url: url, resolvingAgainstBaseURL: false)
         guard let queryItems = components?.queryItems,
@@ -181,16 +201,59 @@ struct SmartParser {
 
         let cleanSecretKey = cleanSecret(secretValue)
 
-        var label = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        if let decodedLabel = label.removingPercentEncoding {
-            label = decodedLabel
+        // Extract path label preserving encoded colons (%3A) before percent decoding
+        let rawPath = components?.percentEncodedPath ?? url.path
+        let trimmedPath = rawPath.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+
+        let (parsedIssuer, parsedName) = parseEncodedLabel(trimmedPath.isEmpty ? "Account" : trimmedPath)
+
+        let explicitIssuer = queryItems.first(where: { $0.name.lowercased() == "issuer" })?.value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let finalIssuer = explicitIssuer.isEmpty ? parsedIssuer : explicitIssuer
+
+        // Parse query parameters: algorithm, digits, period
+        let algorithmVal = queryItems.first(where: { $0.name.lowercased() == "algorithm" })?.value?.lowercased()
+        let algorithm: OTPAlgorithm
+        switch algorithmVal {
+        case "sha256": algorithm = .sha256
+        case "sha512": algorithm = .sha512
+        default: algorithm = .sha1
         }
 
-        let explicitIssuer = queryItems.first(where: { $0.name.lowercased() == "issuer" })?.value ?? ""
-        let (parsedIssuer, parsedName) = parseLabel(label.isEmpty ? "Account" : label)
+        let digitsVal = queryItems.first(where: { $0.name.lowercased() == "digits" })?.value
+        let digits: Int
+        if let d = digitsVal.flatMap(Int.init), (d == 6 || d == 7 || d == 8) {
+            digits = d
+        } else {
+            digits = 6
+        }
 
-        let finalIssuer = explicitIssuer.isEmpty ? parsedIssuer : explicitIssuer
-        return Parsed2FA(name: parsedName, issuer: finalIssuer, secret: cleanSecretKey)
+        let periodVal = queryItems.first(where: { $0.name.lowercased() == "period" })?.value
+        let period: TimeInterval
+        if let p = periodVal.flatMap(TimeInterval.init), p > 0 {
+            period = p
+        } else {
+            period = 30.0
+        }
+
+        return ParsedOTPAccount(
+            name: parsedName,
+            issuer: finalIssuer,
+            secret: cleanSecretKey,
+            algorithm: algorithm,
+            digits: digits,
+            period: period
+        )
+    }
+
+    private static func parseEncodedLabel(_ label: String) -> (issuer: String, name: String) {
+        if label.contains(":") {
+            let parts = label.split(separator: ":", maxSplits: 1).map { String($0) }
+            let issuerPart = (parts[0].removingPercentEncoding ?? parts[0]).trimmingCharacters(in: .whitespaces)
+            let namePart = (parts.count > 1 ? (parts[1].removingPercentEncoding ?? parts[1]) : parts[0]).trimmingCharacters(in: .whitespaces)
+            return (issuerPart, namePart)
+        }
+        let decoded = (label.removingPercentEncoding ?? label).trimmingCharacters(in: .whitespaces)
+        return ("", decoded)
     }
 
     private static func parseLabel(_ label: String) -> (issuer: String, name: String) {
@@ -201,3 +264,4 @@ struct SmartParser {
         return ("", label)
     }
 }
+
